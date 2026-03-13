@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/UI/USS/QuizGame.uss" />
+    <Style src="project://database/Assets/UI/USS/Common.uss" />
+  <ui:VisualElement name="quiz-root" class="quiz-root">
+
+    <!-- 패널 1: 주제 선택 -->
+    <ui:VisualElement name="topic-select-panel" class="topic-select-panel">
+      <ui:Label text="주제를 선택하세요" class="panel-title" />
+      <ui:VisualElement name="topic-buttons-container" class="topic-buttons-container">
+        <ui:Button name="topic-0" class="topic-button" text="역사" />
+        <ui:Button name="topic-1" class="topic-button" text="과학" />
+        <ui:Button name="topic-2" class="topic-button" text="상식" />
+        <ui:Button name="topic-3" class="topic-button" text="문화" />
+        <ui:Button name="topic-4" class="topic-button" text="스포츠" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- 패널 2: 로딩 -->
+    <ui:VisualElement name="loading-panel" class="loading-panel">
+      <ui:Label text="문제를 생성하고 있습니다" class="loading-text" />
+      <ui:VisualElement name="loading-dots" class="loading-dots">
+        <ui:Label name="dot-0" text="●" />
+        <ui:Label name="dot-1" text="●" />
+        <ui:Label name="dot-2" text="●" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- 패널 3: 게임 플레이 -->
+    <ui:VisualElement name="game-panel" class="game-panel">
+      <ui:Label name="topic-badge" class="topic-badge" text="" />
+      <ui:Label name="question-counter" class="question-counter" text="1 / 5" />
+      <ui:Label name="question-label" class="question-label" text="" />
+      <ui:VisualElement name="choices-container" class="choices-container">
+        <ui:Button name="choice-0" class="choice-button" text="" />
+        <ui:Button name="choice-1" class="choice-button" text="" />
+        <ui:Button name="choice-2" class="choice-button" text="" />
+        <ui:Button name="choice-3" class="choice-button" text="" />
+      </ui:VisualElement>
+      <ui:VisualElement name="status-bar" class="status-bar">
+        <ui:Label name="timer-label" class="timer-label" text="20.0s" />
+        <ui:Label name="score-label" class="score-label" text="0 / 5" />
+      </ui:VisualElement>
+      <ui:VisualElement name="explanation-panel" class="explanation-panel">
+        <ui:Label name="explanation-label" class="explanation-label" text="" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- 패널 4: 결과 -->
+    <ui:VisualElement name="result-panel" class="result-panel">
+      <ui:Label name="result-title" class="result-title" text="" />
+      <ui:Label name="result-score" class="result-score" text="" />
+      <ui:Label name="comment-label" class="comment-label" text="총평을 불러오는 중..." />
+      <ui:Button name="restart-button" class="restart-button" text="다시 하기" />
+    </ui:VisualElement>
+
+  </ui:VisualElement>
+</ui:UXML>
+
