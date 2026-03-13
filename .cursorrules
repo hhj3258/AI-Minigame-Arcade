@@ -1,0 +1,120 @@
+# AI Mini Arcade — Cursor Rules
+
+## 프로젝트 개요
+- Unity 6000.3.10f1 / C# / 세로형 모바일 미니게임 모음
+- 상세 기획: `GAME_DESIGN.md`
+- 구현 스펙: `TECH_SPEC.md`
+
+---
+
+## 파일 구조 원칙
+- 스크립트: `Assets/Scripts/{Core|Games|Data|Settings|UI}/`
+- UI 레이아웃: `Assets/UI/UXML/*.uxml`
+- UI 스타일: `Assets/UI/USS/*.uss`
+- ScriptableObject 에셋: `Assets/Settings/*.asset`
+- 프리팹: `Assets/Prefabs/GameCards/`
+
+---
+
+## UI 시스템
+- **UI Toolkit만 사용** (UIDocument + UXML + USS)
+- UGUI (`Canvas`, `Text`, `Button` 컴포넌트) **사용 금지**
+- 스와이프: `PointerDownEvent` → `PointerMoveEvent` → `PointerUpEvent` 조합, UI Toolkit Transitions으로 애니메이션
+
+---
+
+## 코딩 컨벤션
+
+### 네이밍
+- 클래스명, 메서드명, public/protected 필드: `PascalCase`
+- private 필드: `_camelCase` (언더스코어 접두사)
+- 공개 읽기 전용: `public int Foo { get; private set; }` — `private _foo + public Foo => _foo` 패턴 금지
+
+### Null 처리
+```csharp
+// ✅
+if (obj == null) { }
+if (obj != null) { }
+
+// ❌ 금지
+if (!obj) { }
+if (obj) { }
+```
+
+### 초기화 (Awake / Start / Initialize)
+```csharp
+private void Awake()
+{
+    if (_apiClient == null)
+    {
+        Debug.LogError("_apiClient가 할당되지 않았습니다.", this);
+        return;
+    }
+    // 이후 _apiClient 재검증 불필요
+}
+```
+
+### Enum 분기
+```csharp
+// switch 사용, if/else 금지
+switch (type)
+{
+    case Type.A: break;
+    default:
+        Debug.LogError($"미구현 타입: {type}", this);
+        break;
+}
+```
+
+### 로그
+```csharp
+Debug.LogError("메시지", this);      // context 인자 필수
+Debug.LogWarning("메시지", this);
+```
+
+### 기타
+- 빈 생명주기 메서드 (`Start()`, `Update()` 등) 로직 없으면 작성 금지
+- 주석은 **한국어**로 작성
+- 메서드 간 빈 줄 1줄 유지
+
+---
+
+## SOLID 원칙
+
+| 원칙 | 적용 |
+|------|------|
+| SRP | API 호출(ClaudeApiClient) / 게임 로직(XxxGame) / UI(UXML) 완전 분리 |
+| OCP | 새 미니게임 추가 시 `IMinigame` 구현만 추가, 기존 코드 수정 금지 |
+| LSP | 모든 미니게임은 `IMinigame`으로 완전히 대체 가능하게 구현 |
+| ISP | 게임 로직 인터페이스와 UI 바인딩 로직 혼합 금지 |
+| DIP | `GameCardManager`는 `IMinigame`에만 의존, 구체 클래스 직접 참조 금지 |
+
+---
+
+## 미니게임 공통 인터페이스
+
+```csharp
+public interface IMinigame
+{
+    UniTask InitializeAsync();
+    void OnGameStart();
+    void OnGameEnd();
+}
+```
+
+---
+
+## Claude API
+
+- `UnityWebRequest` + UniTask (`async/await`)
+- 엔드포인트: `https://api.anthropic.com/v1/messages`
+- API Key: `StreamingAssets/claude_config.json` 런타임 로드
+- 게임별 시스템 프롬프트: `ClaudePrompts` 정적 클래스 상수로 정의
+- API 실패 시 로컬 fallback 데이터로 대체
+
+---
+
+## 의존성 패키지
+
+- UniTask: `com.cysharp.unitask`
+- Newtonsoft.Json: `com.unity.nuget.newtonsoft-json`
