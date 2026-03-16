@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "mcp__filesystem__directory_tree",
-      "Bash(cmd /c \"where gh\")"
+      "Bash(cmd /c \"where gh\")",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__read_multiple_files",
+      "mcp__filesystem__create_directory",
+      "Bash(del \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\GAME_DESIGN.md\")",
+      "Bash(del \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\TECH_SPEC.md\")"
     ]
   }
 }

@@ -2,8 +2,12 @@
 
 ## 프로젝트 개요
 - Unity 6000.3.10f1 / C# / 세로형 모바일 미니게임 모음
-- 상세 기획: `GAME_DESIGN.md`
-- 구현 스펙: `TECH_SPEC.md`
+
+## 참조 문서
+- 기획: `@Docs/GameDesign.md`
+- 프로그래밍 스펙: `@Docs/Program.md`
+- UI/UX 스펙: `@Docs/UI.md`
+- 아트 스펙: `@Docs/Art.md`
 
 ---
 
@@ -111,6 +115,14 @@ public interface IMinigame
 - API Key: `StreamingAssets/claude_config.json` 런타임 로드
 - 게임별 시스템 프롬프트: `ClaudePrompts` 정적 클래스 상수로 정의
 - API 실패 시 로컬 fallback 데이터로 대체
+
+---
+
+## 보안 / 민감정보 (필수)
+
+- **민감정보(예: API Key/토큰/비밀번호/인증서/개인정보)가 Git 커밋/푸시/PR에 포함될 가능성이 있으면, 진행 전에 반드시 사용자에게 먼저 확인 질문을 할 것.**
+- **`.env`, `*secret*`, `*key*`, `StreamingAssets/*config*.json` 류 파일은 기본적으로 커밋 금지** (사용자가 명시적으로 승인한 경우에만 예외)
+- 키가 이미 원격에 올라갔다면: **즉시 폐기(revoke) + 재발급**을 우선 안내
 
 ---
 

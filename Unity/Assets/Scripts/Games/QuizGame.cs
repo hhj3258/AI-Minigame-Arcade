@@ -22,7 +22,7 @@ public class QuizGame : MonoBehaviour, IMinigame
     private QuizSettings _quizSettings;
 
     [SerializeField]
-    private MonoBehaviour _apiClientObject;
+    private SupabaseQuizClient _supabaseClient;
 
     private VisualElement _quizRoot;
     private VisualElement _topicSelectPanel;
@@ -50,8 +50,7 @@ public class QuizGame : MonoBehaviour, IMinigame
 
     private readonly List<QuizQuestion> _questions = new List<QuizQuestion>();
 
-        private QuizQuestionService _questionService;
-    private IClaudeApiClient _apiClient;
+    private QuizQuestionService _questionService;
 
     private readonly List<Label> _loadingDots = new List<Label>();
     private IVisualElementScheduledItem _loadingDotSchedule;
@@ -83,15 +82,14 @@ private GamePhase _phase;
             return;
         }
 
-                if (_apiClientObject == null)
+        if (_supabaseClient == null)
         {
-            _apiClientObject = GetComponent<ClaudeApiClient>();
+            _supabaseClient = GetComponent<SupabaseQuizClient>();
         }
 
-        _apiClient = _apiClientObject as IClaudeApiClient;
-        if (_apiClient == null)
+        if (_supabaseClient == null)
         {
-            Debug.LogError("IClaudeApiClient를 구현한 컴포넌트를 찾지 못했습니다.", this);
+            Debug.LogError("SupabaseQuizClient 컴포넌트를 찾지 못했습니다.", this);
             return;
         }
 
@@ -210,13 +208,13 @@ _restartButton = _quizRoot.Q<Button>("restart-button");
 
     private void Start()
     {
-        _questionService = new QuizQuestionService(_apiClient, _quizSettings);
+        _questionService = new QuizQuestionService(_supabaseClient, _quizSettings);
         ShowPhase(GamePhase.TopicSelect);
     }
 
     public UniTask InitializeAsync()
     {
-        _questionService = new QuizQuestionService(_apiClient, _quizSettings);
+        _questionService = new QuizQuestionService(_supabaseClient, _quizSettings);
         _questions.Clear();
         _currentIndex = 0;
         _correctCount = 0;
