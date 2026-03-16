@@ -7,7 +7,8 @@
       "mcp__filesystem__read_multiple_files",
       "mcp__filesystem__create_directory",
       "Bash(del \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\GAME_DESIGN.md\")",
-      "Bash(del \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\TECH_SPEC.md\")"
+      "Bash(del \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\TECH_SPEC.md\")",
+      "mcp__filesystem__read_text_file"
     ]
   }
 }
