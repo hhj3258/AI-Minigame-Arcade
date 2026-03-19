@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "prototype",
+      "runtimeExecutable": "C:\\Users\\WN-ND000431\\AppData\\Local\\Python\\bin\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "3333", "--directory", "Prototype"],
+      "port": 3333
+    }
+  ]
+}

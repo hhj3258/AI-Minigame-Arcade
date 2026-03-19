@@ -8,7 +8,22 @@
       "mcp__filesystem__create_directory",
       "Bash(del \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\GAME_DESIGN.md\")",
       "Bash(del \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\TECH_SPEC.md\")",
-      "mcp__filesystem__read_text_file"
+      "mcp__filesystem__read_text_file",
+      "Bash(/tmp/scripts_list.sh:*)",
+      "Bash(__NEW_LINE_0430a5971febca87__ bash:*)",
+      "Bash(/tmp/prefab_scenes.sh:*)",
+      "Bash(__NEW_LINE_797c45628515dd42__ bash:*)",
+      "Bash(grep -E '\\\\.unity$')",
+      "WebFetch(domain:namu.wiki)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where npx:*)",
+      "Bash(where node:*)",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Bash(start \"\" \"C:\\\\Users\\\\WN-ND000431\\\\Desktop\\\\MyClaude\\\\AIGameDemo\\\\Prototype\\\\index.html\")",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_drag",
+      "mcp__playwright__browser_run_code"
     ]
   }
 }
