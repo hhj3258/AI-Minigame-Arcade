@@ -69,3 +69,6 @@ crashlytics-build.properties
 # Claude API Key (do not commit)
 Unity/Assets/StreamingAssets/claude_config.json
 Unity/Assets/StreamingAssets/claude_config.json.meta
+
+# Screenshots
+Unity/Assets/Screenshots/
