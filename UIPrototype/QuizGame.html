@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizGame UI Prototype</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #0a0a14;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+      gap: 20px;
+      min-height: 100vh;
+    }
+
+    /* ── 탭 ─────────────────────────────────────── */
+    .state-tabs {
+      display: flex;
+      gap: 6px;
+      background: #1a1a2e;
+      padding: 6px;
+      border-radius: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .state-tabs button {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #7c7f9e;
+      background: transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .state-tabs button.active { background: #5b6ef5; color: #fff; }
+
+    /* ── 폰 목업 ─────────────────────────────────── */
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 780px;
+      border-radius: 40px;
+      border: 3px solid #2a2a3e;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(91,110,245,0.2);
+      background: #f0f4ff;
+    }
+
+    /* ── quiz-root ───────────────────────────────── */
+    .quiz-root {
+      position: absolute;
+      inset: 0;
+      background: #f0f4ff;
+    }
+
+    /* 모든 패널 기본 숨김 */
+    .panel {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    .panel.visible { display: flex; }
+
+    /* ── topic-select-panel ──────────────────────── */
+    #topicPanel {
+      justify-content: center;
+      padding: 40px 28px;
+      gap: 20px;
+    }
+    .title-label {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e1e2e;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .topic-buttons-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .topic-button {
+      width: 100%;
+      padding: 18px;
+      background: #fff;
+      border: 2px solid #c5c8f0;
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 19px;
+      font-weight: 500;
+      color: #1e1e2e;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(91,110,245,0.07);
+    }
+    .topic-button:hover {
+      background: #eff1ff;
+      border-color: #5b6ef5;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(91,110,245,0.15);
+    }
+
+    /* ── loading-panel ───────────────────────────── */
+    #loadingPanel {
+      justify-content: center;
+      gap: 24px;
+    }
+    .loading-text {
+      font-size: 18px;
+      color: #7c7f9e;
+      font-weight: 500;
+    }
+    .dots-container {
+      display: flex;
+      gap: 10px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #5b6ef5;
+      animation: pulse 0.4s ease-in-out infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: 0.13s; }
+    .dot:nth-child(3) { animation-delay: 0.27s; }
+    @keyframes pulse {
+      from { opacity: 0.3; transform: scale(0.8); }
+      to   { opacity: 1;   transform: scale(1.2); }
+    }
+
+    /* ── gameplay-panel ──────────────────────────── */
+    #gameplayPanel {
+      align-items: stretch;
+      padding: 0;
+    }
+
+    .gameplay-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 20px 0;
+    }
+    .topic-badge {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5b6ef5;
+      background: #eff1ff;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .question-counter {
+      font-size: 14px;
+      color: #7c7f9e;
+      font-weight: 500;
+    }
+
+    .question-text {
+      font-size: 18px;
+      color: #1e1e2e;
+      line-height: 1.6;
+      padding: 20px 20px 16px;
+      font-weight: 500;
+    }
+
+    .choices-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0 20px;
+    }
+
+    /* choice 버튼 */
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #eff1ff;
+      border: 2px solid #c5c8f0;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .choice:hover { border-color: #5b6ef5; background: #e4e8ff; }
+    .choice.correct {
+      background: #29c77a;
+      border-color: #1da862;
+      color: #fff;
+    }
+    .choice.wrong {
+      background: #ff4d6d;
+      border-color: #e03558;
+      color: #fff;
+    }
+    .choice.highlight {
+      background: #29c77a;
+      border-color: #ff6b35;
+      color: #fff;
+    }
+    .choice-index {
+      font-size: 15px;
+      font-weight: 700;
+      color: #5b6ef5;
+      min-width: 22px;
+    }
+    .choice.correct .choice-index,
+    .choice.wrong   .choice-index,
+    .choice.highlight .choice-index { color: rgba(255,255,255,0.85); }
+    .choice-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1e1e2e;
+      line-height: 1.4;
+    }
+    .choice.correct .choice-text,
+    .choice.wrong   .choice-text,
+    .choice.highlight .choice-text { color: #fff; }
+
+    /* status-bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px 10px;
+    }
+    .timer-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ff6b35;
+    }
+    .score-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #7c7f9e;
+    }
+
+    /* explanation-panel */
+    .explanation-panel {
+      margin: 0 20px;
+      padding: 14px 16px;
+      background: #fff;
+      border-radius: 14px;
+      border-left: 4px solid #29c77a;
+      display: none;
+    }
+    .explanation-panel.visible { display: block; }
+    .explanation-panel.wrong-exp { border-color: #ff4d6d; }
+    .explanation-text {
+      font-size: 13px;
+      color: #1e1e2e;
+      line-height: 1.6;
+    }
+
+    /* ── result-panel ────────────────────────────── */
+    #resultPanel {
+      justify-content: center;
+      gap: 16px;
+      padding: 40px 28px;
+    }
+
+    .result-title {
+      font-size: 44px;
+      font-weight: 700;
+      color: #1e1e2e;
+      text-align: center;
+    }
+    .result-score {
+      font-size: 24px;
+      font-weight: 700;
+      color: #5b6ef5;
+    }
+    .comment-box {
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px 20px;
+      border: 2px solid #eff1ff;
+      box-shadow: 0 2px 12px rgba(91,110,245,0.08);
+    }
+    .comment-text {
+      font-size: 15px;
+      color: #1e1e2e;
+      line-height: 1.7;
+    }
+    .restart-button {
+      margin-top: 8px;
+      width: 100%;
+      padding: 18px;
+      background: #5b6ef5;
+      border: none;
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(91,110,245,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .restart-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(91,110,245,0.5);
+    }
+
+    /* ── 결과 유형 탭 ─────────────────────────────── */
+    .sub-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .sub-tabs button {
+      padding: 5px 12px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #7c7f9e;
+      background: #1a1a2e;
+      transition: all 0.15s;
+    }
+    .sub-tabs button.active { background: #ff6b35; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- 패널 전환 탭 -->
+  <div class="state-tabs">
+    <button class="active" onclick="showState('topic')">주제 선택</button>
+    <button onclick="showState('loading')">로딩</button>
+    <button onclick="showState('gameplay-correct')">게임플레이 (정답)</button>
+    <button onclick="showState('gameplay-wrong')">게임플레이 (오답)</button>
+    <button onclick="showState('result-clear')">결과 (클리어)</button>
+    <button onclick="showState('result-fail')">결과 (실패)</button>
+  </div>
+
+  <!-- 폰 목업 -->
+  <div class="phone">
+    <div class="quiz-root">
+
+      <!-- topic-select-panel -->
+      <div class="panel visible" id="topicPanel">
+        <div class="title-label">주제를 선택하세요</div>
+        <div class="topic-buttons-container">
+          <button class="topic-button">🏛️ 역사</button>
+          <button class="topic-button">🔬 과학</button>
+          <button class="topic-button">💡 상식</button>
+          <button class="topic-button">🎭 문화</button>
+          <button class="topic-button">⚽ 스포츠</button>
+        </div>
+      </div>
+
+      <!-- loading-panel -->
+      <div class="panel" id="loadingPanel">
+        <div class="loading-text">문제를 생성하고 있습니다</div>
+        <div class="dots-container">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+
+      <!-- gameplay-panel -->
+      <div class="panel" id="gameplayPanel">
+        <div class="gameplay-header">
+          <div class="topic-badge">역사</div>
+          <div class="question-counter">2 / 5</div>
+        </div>
+
+        <div class="question-text">
+          고구려의 전성기를 이끈 왕으로, 영토를 북쪽으로 크게 확장하여 만주 벌판을 차지했던 인물은 누구입니까?
+        </div>
+
+        <div class="choices-container" id="choices">
+          <div class="choice" id="c0">
+            <span class="choice-index">①</span>
+            <span class="choice-text">광개토대왕</span>
+          </div>
+          <div class="choice" id="c1">
+            <span class="choice-index">②</span>
+            <span class="choice-text">장수왕</span>
+          </div>
+          <div class="choice" id="c2">
+            <span class="choice-index">③</span>
+            <span class="choice-text">근초고왕</span>
+          </div>
+          <div class="choice" id="c3">
+            <span class="choice-index">④</span>
+            <span class="choice-text">진흥왕</span>
+          </div>
+        </div>
+
+        <div class="status-bar">
+          <div class="timer-label" id="timerLabel">17.9s</div>
+          <div class="score-label">1 / 5</div>
+        </div>
+
+        <div class="explanation-panel" id="explanation">
+          <div class="explanation-text" id="explanationText">
+            광개토대왕은 고구려의 영토를 크게 넓혀 만주 지역까지 세력을 확장한 정복 군주입니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- result-panel -->
+      <div class="panel" id="resultPanel">
+        <div class="result-title" id="resultTitle">🎉 클리어!</div>
+        <div class="result-score" id="resultScore">4 / 5 정답</div>
+        <div class="comment-box">
+          <div class="comment-text" id="commentText">
+            오 4개 맞았네 실화냐 ㅋㅋ 이 정도면 뭐 꽤 하는 편이지. 역사 공부 좀 했나봐? 근데 마지막 문제 그거 틀린 거 아직도 이해 안 감 ㅋㅋ
+          </div>
+        </div>
+        <button class="restart-button">다시 하기</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let timerVal = 17.9;
+    let timerInterval = null;
+
+    function showState(state) {
+      // 모든 패널 숨김
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+      document.querySelectorAll('.state-tabs button').forEach(b => b.classList.remove('active'));
+
+      // 탭 활성화
+      const btns = document.querySelectorAll('.state-tabs button');
+      const stateMap = {
+        'topic': 0, 'loading': 1,
+        'gameplay-correct': 2, 'gameplay-wrong': 3,
+        'result-clear': 4, 'result-fail': 5
+      };
+      btns[stateMap[state]].classList.add('active');
+
+      // 타이머 초기화
+      clearInterval(timerInterval);
+
+      if (state === 'topic') {
+        document.getElementById('topicPanel').classList.add('visible');
+
+      } else if (state === 'loading') {
+        document.getElementById('loadingPanel').classList.add('visible');
+
+      } else if (state === 'gameplay-correct') {
+        document.getElementById('gameplayPanel').classList.add('visible');
+        // 정답 선택 상태
+        resetChoices();
+        document.getElementById('c0').classList.add('correct');
+        document.getElementById('explanation').classList.add('visible');
+        document.getElementById('explanation').classList.remove('wrong-exp');
+        document.getElementById('explanationText').textContent =
+          '광개토대왕은 고구려의 영토를 크게 넓혀 만주 지역까지 세력을 확장한 정복 군주입니다.';
+        document.getElementById('timerLabel').textContent = '17.9s';
+
+      } else if (state === 'gameplay-wrong') {
+        document.getElementById('gameplayPanel').classList.add('visible');
+        // 오답 선택 상태 (②장수왕 선택, ①광개토대왕 정답 하이라이트)
+        resetChoices();
+        document.getElementById('c1').classList.add('wrong');
+        document.getElementById('c0').classList.add('highlight');
+        document.getElementById('explanation').classList.add('visible', 'wrong-exp');
+        document.getElementById('explanationText').textContent =
+          '정답은 광개토대왕입니다. 장수왕은 아버지 광개토대왕의 뒤를 이어 평양으로 천도한 왕입니다.';
+        document.getElementById('timerLabel').textContent = '9.3s';
+        startTimer();
+
+      } else if (state === 'result-clear') {
+        document.getElementById('resultPanel').classList.add('visible');
+        document.getElementById('resultTitle').textContent = '🎉 클리어!';
+        document.getElementById('resultScore').textContent = '4 / 5 정답';
+        document.getElementById('commentText').textContent =
+          '오 4개 맞았네 실화냐 ㅋㅋ 이 정도면 뭐 꽤 하는 편이지. 역사 공부 좀 했나봐? 근데 마지막 문제 그거 틀린 거 아직도 이해 안 감 ㅋㅋ';
+        document.getElementById('resultPanel').style.background = '#f0f4ff';
+
+      } else if (state === 'result-fail') {
+        document.getElementById('resultPanel').classList.add('visible');
+        document.getElementById('resultTitle').textContent = '😢 실패';
+        document.getElementById('resultScore').textContent = '1 / 5 정답';
+        document.getElementById('commentText').textContent =
+          '야 이게 틀리면 진짜 ㅋㅋ 역사 퀴즈 5문제 중에 1개 맞추는 건 ㅋㅋㅋ 이거 역사 공부 다시 해야겠는데요? ㅠㅠ 이 정도면 한국사 능력 검정시험 가서 다 찍고 와도 이거보단 잘 나올 듯 ㅋㅋㅋ';
+        document.getElementById('resultPanel').style.background = '#f0f4ff';
+      }
+    }
+
+    function resetChoices() {
+      ['c0','c1','c2','c3'].forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'choice';
+      });
+      document.getElementById('explanation').classList.remove('visible', 'wrong-exp');
+    }
+
+    function startTimer() {
+      timerVal = 9.3;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timerVal = Math.max(0, timerVal - 0.1);
+        document.getElementById('timerLabel').textContent = timerVal.toFixed(1) + 's';
+        if (timerVal <= 0) clearInterval(timerInterval);
+      }, 100);
+    }
+  </script>
+</body>
+</html>

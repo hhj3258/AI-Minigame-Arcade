@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Mini Arcade</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #0a0a14;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+      gap: 16px;
+      min-height: 100vh;
+    }
+
+    .hint {
+      color: #7c7f9e;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── 폰 목업 ─────────────────────────────── */
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 780px;
+      border-radius: 40px;
+      border: 3px solid #2a2a3e;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(91,110,245,0.2);
+      cursor: grab;
+      user-select: none;
+    }
+    .phone:active { cursor: grabbing; }
+
+    /* ── card-container ──────────────────────── */
+    /* UI.md 스와이프 스펙 그대로 */
+    .card-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      /* 카드 2장 세로 쌓기 */
+      height: 200%;
+      display: flex;
+      flex-direction: column;
+      transition: transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94); /* ease-out */
+      will-change: transform;
+    }
+    .card-container.no-transition { transition: none; }
+
+    /* game-card */
+    .game-card {
+      width: 100%;
+      height: 50%; /* = 780px (폰 높이) */
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── 카드 인디케이터 ──────────────────────── */
+    .card-indicator {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .ind-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.3);
+      transition: all 0.3s;
+    }
+    .ind-dot.active {
+      height: 16px;
+      background: #fff;
+    }
+
+    /* ────────────────────────────────────────────
+       QUIZ GAME (card-0)
+    ──────────────────────────────────────────── */
+    .quiz-root {
+      position: absolute;
+      inset: 0;
+      background: #f0f4ff;
+    }
+
+    /* 패널 탭 (퀴즈) */
+    .quiz-tabs {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      background: rgba(0,0,0,0.08);
+      padding: 4px;
+      border-radius: 10px;
+      z-index: 50;
+      white-space: nowrap;
+    }
+    .quiz-tabs button {
+      padding: 4px 10px;
+      border: none;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #7c7f9e;
+      background: transparent;
+    }
+    .quiz-tabs button.active { background: #5b6ef5; color: #fff; }
+
+    .q-panel { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; }
+    .q-panel.visible { display: flex; }
+
+    /* topic-select */
+    #qTopic { justify-content: center; padding: 60px 28px 28px; gap: 16px; }
+    .q-title { font-size: 26px; font-weight: 700; color: #1e1e2e; }
+    .topic-btns { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+    .topic-btn {
+      width: 100%; padding: 16px;
+      background: #fff; border: 2px solid #c5c8f0; border-radius: 14px;
+      font-family: inherit; font-size: 17px; font-weight: 500; color: #1e1e2e;
+      cursor: pointer; text-align: center;
+      box-shadow: 0 2px 8px rgba(91,110,245,0.06);
+      transition: all 0.15s;
+    }
+    .topic-btn:hover { background: #eff1ff; border-color: #5b6ef5; }
+
+    /* loading */
+    #qLoading { justify-content: center; gap: 20px; }
+    .load-text { font-size: 16px; color: #7c7f9e; font-weight: 500; }
+    .dots { display: flex; gap: 8px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #5b6ef5;
+      animation: dp 0.4s ease-in-out infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: 0.13s; }
+    .dot:nth-child(3) { animation-delay: 0.27s; }
+    @keyframes dp { from { opacity: 0.3; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+
+    /* gameplay */
+    #qGameplay { align-items: stretch; padding: 0; }
+    .q-header { display: flex; justify-content: space-between; align-items: center; padding: 54px 20px 0; }
+    .topic-badge { font-size: 13px; font-weight: 700; color: #5b6ef5; background: #eff1ff; padding: 3px 10px; border-radius: 20px; }
+    .q-counter { font-size: 13px; color: #7c7f9e; font-weight: 500; }
+    .q-text { font-size: 17px; color: #1e1e2e; line-height: 1.6; padding: 16px 20px 12px; font-weight: 500; }
+    .choices { display: flex; flex-direction: column; gap: 8px; padding: 0 20px; }
+    .choice {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; background: #eff1ff; border: 2px solid #c5c8f0;
+      border-radius: 12px; cursor: pointer; transition: all 0.15s;
+    }
+    .choice.correct { background: #29c77a; border-color: #1da862; }
+    .choice.wrong   { background: #ff4d6d; border-color: #e03558; }
+    .choice.highlight { background: #29c77a; border-color: #ff6b35; }
+    .ci { font-size: 14px; font-weight: 700; color: #5b6ef5; min-width: 18px; }
+    .choice.correct .ci, .choice.wrong .ci, .choice.highlight .ci { color: rgba(255,255,255,0.85); }
+    .ct { font-size: 15px; font-weight: 500; color: #1e1e2e; }
+    .choice.correct .ct, .choice.wrong .ct, .choice.highlight .ct { color: #fff; }
+    .status-bar { display: flex; justify-content: space-between; padding: 10px 20px 8px; }
+    .timer { font-size: 14px; font-weight: 700; color: #ff6b35; }
+    .score  { font-size: 14px; font-weight: 700; color: #7c7f9e; }
+    .exp-box { margin: 0 20px; padding: 12px 14px; background: #fff; border-radius: 12px; border-left: 4px solid #29c77a; display: none; }
+    .exp-box.visible { display: block; }
+    .exp-text { font-size: 12px; color: #1e1e2e; line-height: 1.5; }
+
+    /* result */
+    #qResult { justify-content: center; gap: 14px; padding: 40px 28px; }
+    .r-title { font-size: 40px; font-weight: 700; color: #1e1e2e; }
+    .r-score { font-size: 22px; font-weight: 700; color: #5b6ef5; }
+    .r-box { width: 100%; background: #fff; border-radius: 14px; padding: 16px 18px; border: 2px solid #eff1ff; }
+    .r-comment { font-size: 14px; color: #1e1e2e; line-height: 1.7; }
+    .r-restart {
+      width: 100%; padding: 16px; background: #5b6ef5; border: none; border-radius: 14px;
+      font-family: inherit; font-size: 17px; font-weight: 700; color: #fff;
+      cursor: pointer; box-shadow: 0 4px 14px rgba(91,110,245,0.35);
+    }
+
+    /* ────────────────────────────────────────────
+       SURVIVOR GAME (card-1)
+    ──────────────────────────────────────────── */
+    .surv-root { position: absolute; inset: 0; background: transparent; }
+
+    /* 배경 */
+    .game-world { position: absolute; inset: 0; background: #0d1117; }
+    .player {
+      position: absolute; width: 26px; height: 26px; border-radius: 50%;
+      background: radial-gradient(circle, #a0c4ff, #5b6ef5);
+      box-shadow: 0 0 12px rgba(91,110,245,0.8);
+      left: 50%; top: 55%; transform: translate(-50%, -50%);
+    }
+    .orb {
+      position: absolute; width: 7px; height: 7px; border-radius: 50%;
+      background: #3498db; box-shadow: 0 0 5px #3498db;
+      animation: fl 2s ease-in-out infinite alternate;
+    }
+    @keyframes fl { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+
+    /* surv 패널 탭 */
+    .surv-tabs {
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 4px; background: rgba(0,0,0,0.5); padding: 4px;
+      border-radius: 10px; z-index: 50; white-space: nowrap;
+    }
+    .surv-tabs button {
+      padding: 4px 10px; border: none; border-radius: 7px;
+      font-family: inherit; font-size: 11px; font-weight: 500;
+      cursor: pointer; color: rgba(255,255,255,0.5); background: transparent;
+    }
+    .surv-tabs button.active { background: #5b6ef5; color: #fff; }
+
+    /* hud-panel */
+    .hud-panel { position: absolute; inset: 0; pointer-events: none; }
+    .top-bar {
+      position: absolute; top: 0; left: 0; right: 0; padding: 44px 14px 0;
+      display: flex; flex-direction: column; gap: 6px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+    }
+    .top-row { display: flex; align-items: center; gap: 8px; }
+    .hp-container { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .hp-lbl { font-size: 11px; font-weight: 700; color: #fff; }
+    .hp-bg { width: 100%; height: 9px; background: rgba(255,255,255,0.15); border-radius: 5px; overflow: hidden; }
+    .hp-fill { height: 100%; background: #e74c3c; border-radius: 5px; transition: width 0.3s; }
+    .hp-danger .hp-fill { animation: hblink 0.5s ease-in-out infinite alternate; }
+    @keyframes hblink { from { opacity: 1; } to { opacity: 0.4; } }
+    .timer-lbl { font-size: 17px; font-weight: 700; color: #fff; min-width: 46px; text-align: center; }
+    .kill-lbl  { font-size: 12px; color: rgba(255,255,255,0.8); min-width: 50px; text-align: right; }
+    .exp-row { padding: 0 14px; display: flex; align-items: center; gap: 6px; }
+    .exp-bg { flex: 1; height: 5px; background: rgba(255,255,255,0.12); border-radius: 3px; overflow: hidden; }
+    .exp-fill { height: 100%; background: linear-gradient(90deg, #3498db, #a0c4ff); border-radius: 3px; transition: width 0.4s; }
+    .lv-lbl { font-size: 12px; font-weight: 700; color: #a0c4ff; min-width: 30px; text-align: right; }
+
+    .joystick-area {
+      position: absolute; bottom: 36px; left: 20px;
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: auto; cursor: crosshair;
+    }
+    .joystick-handle {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(255,255,255,0.35); border: 1.5px solid rgba(255,255,255,0.5);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.05s;
+    }
+
+    /* upgrade-panel */
+    .upgrade-panel {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.82);
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; gap: 16px; padding: 20px;
+    }
+    .upgrade-panel.visible { display: flex; }
+    .upg-title { font-size: 20px; font-weight: 700; color: #fff; }
+    .upg-sub   { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: -10px; }
+    .upg-cards { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .upg-card {
+      width: 100%; background: #1a1a2e; border-radius: 12px;
+      border: 2px solid transparent; padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+    }
+    .upg-card.new    { border-color: #ffd700; }
+    .upg-card.evolve { border-color: #5b6ef5; }
+    .w-icon { width: 44px; height: 44px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .w-shotgun  { background: rgba(231,76,60,0.2); }
+    .w-orb      { background: rgba(52,152,219,0.2); }
+    .w-missile  { background: rgba(255,214,0,0.2); }
+    .w-info { flex: 1; }
+    .w-name { font-size: 15px; font-weight: 700; color: #fff; }
+    .w-level { font-size: 11px; font-weight: 700; letter-spacing: 0.4px; margin-top: 2px; }
+    .w-level.new    { color: #ffd700; }
+    .w-level.evolve { color: #5b6ef5; }
+    .w-desc { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 3px; line-height: 1.4; }
+
+    /* result-panel */
+    .result-panel {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.87);
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; gap: 12px; padding: 28px 22px;
+    }
+    .result-panel.visible { display: flex; }
+    .res-title  { font-size: 36px; font-weight: 700; color: #fff; }
+    .res-div    { width: 50px; height: 2px; background: rgba(255,255,255,0.15); border-radius: 1px; margin: 4px 0 10px; }
+    .res-stats  { width: 100%; background: rgba(255,255,255,0.05); border-radius: 14px; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .stat-row   { display: flex; justify-content: space-between; align-items: center; }
+    .stat-lbl   { font-size: 14px; color: rgba(255,255,255,0.5); }
+    .stat-val   { font-size: 17px; font-weight: 700; color: #fff; }
+    .stat-row.score .stat-lbl { color: #ffd700; }
+    .stat-row.score .stat-val { font-size: 24px; color: #ffd700; }
+    .res-btn {
+      margin-top: 8px; width: 180px; height: 50px;
+      background: #5b6ef5; border: none; border-radius: 12px;
+      font-family: inherit; font-size: 16px; font-weight: 700; color: #fff;
+      cursor: pointer; box-shadow: 0 4px 14px rgba(91,110,245,0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hint">↕ 위아래 드래그로 게임 전환</div>
+
+  <div class="phone" id="phone">
+
+    <!-- card-container -->
+    <div class="card-container" id="cardContainer">
+
+      <!-- game-card-0: QuizGame -->
+      <div class="game-card" id="gameCard0">
+        <div class="quiz-root">
+
+          <!-- 퀴즈 상태 탭 (프로토타입용) -->
+          <div class="quiz-tabs">
+            <button class="active" onclick="showQuiz('topic',event)">주제선택</button>
+            <button onclick="showQuiz('loading',event)">로딩</button>
+            <button onclick="showQuiz('correct',event)">정답</button>
+            <button onclick="showQuiz('wrong',event)">오답</button>
+            <button onclick="showQuiz('result',event)">결과</button>
+          </div>
+
+          <!-- topic-select-panel -->
+          <div class="q-panel visible" id="qTopic">
+            <div class="q-title">주제를 선택하세요</div>
+            <div class="topic-btns">
+              <button class="topic-btn">🏛️ 역사</button>
+              <button class="topic-btn">🔬 과학</button>
+              <button class="topic-btn">💡 상식</button>
+              <button class="topic-btn">🎭 문화</button>
+              <button class="topic-btn">⚽ 스포츠</button>
+            </div>
+          </div>
+
+          <!-- loading-panel -->
+          <div class="q-panel" id="qLoading">
+            <div class="load-text">문제를 생성하고 있습니다</div>
+            <div class="dots">
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+          </div>
+
+          <!-- gameplay-panel -->
+          <div class="q-panel" id="qGameplay" style="align-items:stretch;">
+            <div class="q-header">
+              <div class="topic-badge">역사</div>
+              <div class="q-counter">2 / 5</div>
+            </div>
+            <div class="q-text">고구려의 전성기를 이끈 왕으로, 영토를 북쪽으로 크게 확장하여 만주 벌판을 차지했던 인물은 누구입니까?</div>
+            <div class="choices" id="choices">
+              <div class="choice" id="c0"><span class="ci">①</span><span class="ct">광개토대왕</span></div>
+              <div class="choice" id="c1"><span class="ci">②</span><span class="ct">장수왕</span></div>
+              <div class="choice" id="c2"><span class="ci">③</span><span class="ct">근초고왕</span></div>
+              <div class="choice" id="c3"><span class="ci">④</span><span class="ct">진흥왕</span></div>
+            </div>
+            <div class="status-bar">
+              <div class="timer" id="qTimer">17.9s</div>
+              <div class="score">1 / 5</div>
+            </div>
+            <div class="exp-box" id="expBox">
+              <div class="exp-text" id="expText">광개토대왕은 고구려의 영토를 크게 넓혀 만주 지역까지 세력을 확장한 정복 군주입니다.</div>
+            </div>
+          </div>
+
+          <!-- result-panel -->
+          <div class="q-panel" id="qResult">
+            <div class="r-title" id="rTitle">🎉 클리어!</div>
+            <div class="r-score" id="rScore">4 / 5 정답</div>
+            <div class="r-box">
+              <div class="r-comment" id="rComment">오 4개 맞았네 실화냐 ㅋㅋ 이 정도면 뭐 꽤 하는 편이지. 역사 공부 좀 했나봐? 근데 마지막 문제 그거 틀린 거 아직도 이해 안 감 ㅋㅋ</div>
+            </div>
+            <button class="r-restart">다시 하기</button>
+          </div>
+
+        </div>
+      </div><!-- /game-card-0 -->
+
+      <!-- game-card-1: SurvivorGame -->
+      <div class="game-card" id="gameCard1">
+
+        <!-- 게임 월드 배경 -->
+        <div class="game-world" id="gameWorld">
+          <canvas id="bgCanvas" width="390" height="780"></canvas>
+          <div class="player"></div>
+          <div class="orb" style="left:44%;top:48%;animation-delay:0.1s"></div>
+          <div class="orb" style="left:37%;top:53%;animation-delay:0.4s"></div>
+          <div class="orb" style="left:56%;top:57%;animation-delay:0.7s"></div>
+        </div>
+
+        <div class="surv-root">
+
+          <!-- 뱀서 상태 탭 (프로토타입용) -->
+          <div class="surv-tabs">
+            <button class="active" onclick="showSurv('hud',event)">HUD</button>
+            <button onclick="showSurv('upgrade',event)">레벨업</button>
+            <button onclick="showSurv('result',event)">게임오버</button>
+          </div>
+
+          <!-- hud-panel -->
+          <div class="hud-panel" id="survHud">
+            <div class="top-bar">
+              <div class="top-row">
+                <div class="hp-container" id="hpCont">
+                  <div class="hp-lbl">HP 75 / 100</div>
+                  <div class="hp-bg"><div class="hp-fill" id="hpFill" style="width:75%"></div></div>
+                </div>
+                <div class="timer-lbl" id="survTimer">01:23</div>
+                <div class="kill-lbl">처치 42</div>
+              </div>
+              <div class="exp-row">
+                <div class="exp-bg"><div class="exp-fill" id="expFill" style="width:60%"></div></div>
+                <div class="lv-lbl">Lv.3</div>
+              </div>
+            </div>
+            <div class="joystick-area" id="joystickArea">
+              <div class="joystick-handle" id="joystickHandle"></div>
+            </div>
+          </div>
+
+          <!-- upgrade-panel -->
+          <div class="upgrade-panel" id="survUpgrade">
+            <div class="upg-title">무기를 선택하세요</div>
+            <div class="upg-sub">레벨업! Lv.3 → Lv.4</div>
+            <div class="upg-cards">
+              <div class="upg-card new">
+                <div class="w-icon w-shotgun">🔫</div>
+                <div class="w-info">
+                  <div class="w-name">샷건</div>
+                  <div class="w-level new">NEW</div>
+                  <div class="w-desc">3방향 산탄 — 레벨업 시 발사 수 +1</div>
+                </div>
+              </div>
+              <div class="upg-card evolve">
+                <div class="w-icon w-orb">🔵</div>
+                <div class="w-info">
+                  <div class="w-name">오브</div>
+                  <div class="w-level evolve">Lv.1 → Lv.2</div>
+                  <div class="w-desc">회전 구체 — 레벨업 시 구체 수 +1</div>
+                </div>
+              </div>
+              <div class="upg-card new">
+                <div class="w-icon w-missile">🚀</div>
+                <div class="w-info">
+                  <div class="w-name">미사일</div>
+                  <div class="w-level new">NEW</div>
+                  <div class="w-desc">유도 추적 — 레벨업 시 데미지 +50%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- result-panel -->
+          <div class="result-panel" id="survResult">
+            <div class="res-title">💀 게임 오버</div>
+            <div class="res-div"></div>
+            <div class="res-stats">
+              <div class="stat-row"><span class="stat-lbl">생존 시간</span><span class="stat-val">02:37</span></div>
+              <div class="stat-row"><span class="stat-lbl">처치 수</span><span class="stat-val">58</span></div>
+              <div class="stat-row score"><span class="stat-lbl">점수</span><span class="stat-val">1,697</span></div>
+            </div>
+            <button class="res-btn">다시 하기</button>
+          </div>
+
+        </div>
+      </div><!-- /game-card-1 -->
+
+    </div><!-- /card-container -->
+
+    <!-- 카드 인디케이터 -->
+    <div class="card-indicator">
+      <div class="ind-dot active" id="dot0"></div>
+      <div class="ind-dot" id="dot1"></div>
+    </div>
+
+  </div><!-- /phone -->
+
+  <script>
+    /* ── 스와이프 (UI.md 스펙 기반) ─────────────
+       전환 임계값: 화면 높이 30% = 234px
+       전환 시간: 300ms ease-out
+    ─────────────────────────────────────────── */
+    const CARD_HEIGHT = 780;
+    const THRESHOLD   = CARD_HEIGHT * 0.30; // 234px
+    const MAX_TIME_MS = 250;                // 0.25s
+
+    let currentCard = 0;
+    const totalCards = 2;
+    const container = document.getElementById('cardContainer');
+
+    let startY = 0, startTime = 0, isDragging = false;
+
+    function getOffset() { return -currentCard * CARD_HEIGHT; }
+    function applyOffset(y, animate) {
+      container.classList.toggle('no-transition', !animate);
+      container.style.transform = `translateY(${y}px)`;
+    }
+    function goToCard(idx) {
+      currentCard = Math.max(0, Math.min(totalCards - 1, idx));
+      applyOffset(getOffset(), true);
+      updateIndicator();
+    }
+    function updateIndicator() {
+      document.querySelectorAll('.ind-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentCard);
+      });
+    }
+
+    const phone = document.getElementById('phone');
+
+    // 마우스
+    phone.addEventListener('mousedown',  e => onStart(e.clientY));
+    window.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientY); });
+    window.addEventListener('mouseup',   e => { if (isDragging) onEnd(e.clientY); });
+
+    // 터치
+    phone.addEventListener('touchstart', e => onStart(e.touches[0].clientY), { passive: true });
+    phone.addEventListener('touchmove',  e => { if (isDragging) onMove(e.touches[0].clientY); }, { passive: true });
+    phone.addEventListener('touchend',   e => { if (isDragging) onEnd(e.changedTouches[0].clientY); });
+
+    function onStart(y) {
+      isDragging = true;
+      startY = y;
+      startTime = Date.now();
+      applyOffset(getOffset(), false);
+    }
+    function onMove(y) {
+      const dy = y - startY;
+      // 첫 카드 아래 드래그 / 마지막 카드 위 드래그 고정
+      if ((currentCard === 0 && dy > 0) || (currentCard === totalCards - 1 && dy < 0)) {
+        applyOffset(getOffset() + dy * 0.15, false); // 저항감
+        return;
+      }
+      applyOffset(getOffset() + dy, false);
+    }
+    function onEnd(y) {
+      isDragging = false;
+      const dy       = y - startY;
+      const elapsed  = Date.now() - startTime;
+      const isFast   = elapsed < MAX_TIME_MS && Math.abs(dy) > 80;
+
+      if (dy < -THRESHOLD || (isFast && dy < 0)) {
+        goToCard(currentCard + 1);
+      } else if (dy > THRESHOLD || (isFast && dy > 0)) {
+        goToCard(currentCard - 1);
+      } else {
+        goToCard(currentCard); // 원위치
+      }
+    }
+
+    /* ── 퀴즈 상태 전환 ─────────────────────── */
+    function showQuiz(state, e) {
+      if (e) e.stopPropagation();
+      document.querySelectorAll('.q-panel').forEach(p => p.classList.remove('visible'));
+      document.querySelectorAll('.quiz-tabs button').forEach(b => b.classList.remove('active'));
+      if (e) e.target.classList.add('active');
+
+      resetChoices();
+      if (state === 'topic')   { document.getElementById('qTopic').classList.add('visible'); }
+      if (state === 'loading') { document.getElementById('qLoading').classList.add('visible'); }
+      if (state === 'correct') {
+        document.getElementById('qGameplay').classList.add('visible');
+        document.getElementById('c0').classList.add('correct');
+        document.getElementById('expBox').classList.add('visible');
+        document.getElementById('expText').textContent = '광개토대왕은 고구려의 영토를 크게 넓혀 만주 지역까지 세력을 확장한 정복 군주입니다.';
+        document.getElementById('expBox').classList.remove('wrong-exp');
+      }
+      if (state === 'wrong') {
+        document.getElementById('qGameplay').classList.add('visible');
+        document.getElementById('c1').classList.add('wrong');
+        document.getElementById('c0').classList.add('highlight');
+        document.getElementById('expBox').classList.add('visible', 'wrong-exp');
+        document.getElementById('expText').textContent = '정답은 광개토대왕입니다. 장수왕은 아버지 광개토대왕의 뒤를 이어 평양으로 천도한 왕입니다.';
+      }
+      if (state === 'result')  { document.getElementById('qResult').classList.add('visible'); }
+    }
+    function resetChoices() {
+      ['c0','c1','c2','c3'].forEach(id => { document.getElementById(id).className = 'choice'; });
+      const eb = document.getElementById('expBox');
+      eb.classList.remove('visible','wrong-exp');
+    }
+
+    /* ── 뱀서 상태 전환 ─────────────────────── */
+    function showSurv(state, e) {
+      if (e) e.stopPropagation();
+      document.getElementById('survUpgrade').classList.remove('visible');
+      document.getElementById('survResult').classList.remove('visible');
+      document.querySelectorAll('.surv-tabs button').forEach(b => b.classList.remove('active'));
+      if (e) e.target.classList.add('active');
+
+      if (state === 'upgrade') document.getElementById('survUpgrade').classList.add('visible');
+      if (state === 'result')  document.getElementById('survResult').classList.add('visible');
+    }
+
+    /* ── 조이스틱 ────────────────────────────── */
+    const area   = document.getElementById('joystickArea');
+    const handle = document.getElementById('joystickHandle');
+    const RADIUS = 29;
+    let jDragging = false, jOX = 0, jOY = 0;
+
+    area.addEventListener('pointerdown', e => {
+      jDragging = true;
+      const r = area.getBoundingClientRect();
+      jOX = r.left + r.width  / 2;
+      jOY = r.top  + r.height / 2;
+      area.setPointerCapture(e.pointerId);
+      moveHandle(e.clientX, e.clientY);
+      e.stopPropagation();
+    });
+    area.addEventListener('pointermove', e => { if (jDragging) { moveHandle(e.clientX, e.clientY); e.stopPropagation(); } });
+    area.addEventListener('pointerup',   () => { jDragging = false; handle.style.transform = 'translate(0,0)'; });
+    function moveHandle(cx, cy) {
+      let dx = cx - jOX, dy = cy - jOY;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d > RADIUS) { dx = dx/d*RADIUS; dy = dy/d*RADIUS; }
+      handle.style.transform = `translate(${dx}px,${dy}px)`;
+    }
+
+    /* ── 배경 캔버스 ─────────────────────────── */
+    const canvas  = document.getElementById('bgCanvas');
+    const ctx     = canvas.getContext('2d');
+    const enemies = Array.from({ length: 16 }, () => ({
+      x: Math.random() * 390, y: Math.random() * 780,
+      r: 5 + Math.random() * 8,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      color: ['#e74c3c','#c0392b','#922b21','#7b241c'][Math.floor(Math.random()*4)],
+    }));
+    function drawGrid() {
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
+      for (let x = 0; x <= 390; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,780); ctx.stroke(); }
+      for (let y = 0; y <= 780; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(390,y); ctx.stroke(); }
+    }
+    function animateBg() {
+      ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,390,780);
+      drawGrid();
+      enemies.forEach(e => {
+        e.x += e.vx; e.y += e.vy;
+        if (e.x < 0 || e.x > 390) e.vx *= -1;
+        if (e.y < 0 || e.y > 780) e.vy *= -1;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        ctx.fillStyle = e.color; ctx.fill();
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.r+3, 0, Math.PI*2);
+        ctx.strokeStyle = e.color+'55'; ctx.lineWidth = 2; ctx.stroke();
+      });
+      requestAnimationFrame(animateBg);
+    }
+    animateBg();
+
+    /* ── HP / EXP / 타이머 애니메이션 ─────────── */
+    let hp = 75;
+    setInterval(() => {
+      hp = Math.max(5, Math.min(100, hp + (Math.random() > 0.5 ? -3 : 1)));
+      document.getElementById('hpFill').style.width = hp + '%';
+      document.querySelector('.hp-lbl').textContent = `HP ${hp} / 100`;
+      const cont = document.getElementById('hpCont');
+      hp <= 30 ? cont.classList.add('hp-danger') : cont.classList.remove('hp-danger');
+    }, 800);
+
+    let exp = 60;
+    setInterval(() => { exp = (exp + 5) % 100; document.getElementById('expFill').style.width = exp + '%'; }, 600);
+
+    let secs = 83;
+    setInterval(() => {
+      secs++;
+      const m = String(Math.floor(secs/60)).padStart(2,'0');
+      const s = String(secs%60).padStart(2,'0');
+      document.getElementById('survTimer').textContent = `${m}:${s}`;
+    }, 1000);
+  </script>
+</body>
+</html>

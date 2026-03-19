@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Mini Arcade — UI/UX 스펙</title>
+  <style>
+    :root {
+      --bg:         #f0f4ff;
+      --card:       #ffffff;
+      --primary:    #5b6ef5;
+      --accent:     #ff6b35;
+      --text:       #1e1e2e;
+      --text-sec:   #7c7f9e;
+      --correct:    #29c77a;
+      --wrong:      #ff4d6d;
+      --btn-default:#eff1ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 40px 32px 32px;
+      text-align: center;
+    }
+    header h1 { font-size: 2.4rem; font-weight: 800; letter-spacing: -1px; }
+    header p  { margin-top: 8px; opacity: .8; font-size: 1rem; }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: #fff;
+      border-bottom: 2px solid var(--btn-default);
+      display: flex; gap: 4px;
+      padding: 0 24px;
+      overflow-x: auto;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--text-sec);
+      font-size: .85rem; font-weight: 600;
+      padding: 14px 16px;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: color .2s, border-color .2s;
+    }
+    nav a:hover { color: var(--primary); border-color: var(--primary); }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: grid;
+      gap: 48px;
+    }
+
+    section { scroll-margin-top: 60px; }
+
+    h2 {
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--primary);
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 24px;
+    }
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 24px;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 4px 24px rgba(91,110,245,.08);
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    @media (max-width: 700px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Concept diagram ── */
+    .concept-wrap {
+      display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .phone-mock {
+      flex: 0 0 auto;
+      width: 180px;
+      border: 3px solid var(--text);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,.15);
+    }
+    .phone-screen {
+      background: var(--bg);
+      aspect-ratio: 9/16;
+      display: flex; flex-direction: column;
+      font-size: .7rem;
+    }
+    .phone-card {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 2px dashed #c5c8f0;
+    }
+    .phone-card:last-child { border-bottom: none; }
+    .phone-card .label {
+      font-weight: 700; color: var(--primary); font-size: .75rem;
+    }
+    .phone-card .sublabel { color: var(--text-sec); font-size: .65rem; }
+    .swipe-arrow {
+      font-size: 1.2rem; color: var(--accent);
+      text-align: center; padding: 4px 0;
+      background: #fff8f5;
+      border-top: 1px dashed #ffd0bc;
+      border-bottom: 1px dashed #ffd0bc;
+    }
+
+    .concept-text { flex: 1; min-width: 240px; }
+    .bullet-list {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .bullet-list li {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: .9rem; line-height: 1.6;
+    }
+    .bullet-list li::before {
+      content: '→';
+      color: var(--primary); font-weight: 700; flex-shrink: 0;
+    }
+
+    /* ── Color Palette ── */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 16px;
+    }
+    .color-chip {
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+    .color-swatch { height: 72px; }
+    .color-info { padding: 10px 12px; background: #fff; }
+    .color-name  { font-size: .78rem; font-weight: 700; }
+    .color-hex   { font-size: .72rem; color: var(--text-sec); font-family: monospace; margin-top: 2px; }
+    .color-desc  { font-size: .68rem; color: var(--text-sec); margin-top: 4px; }
+
+    /* ── Choice Button Demo ── */
+    .btn-demo { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .choice-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      border: 2px solid #c5c8f0;
+      background: var(--btn-default);
+      cursor: pointer;
+      font-size: .85rem; font-weight: 600;
+      transition: transform .15s, box-shadow .15s;
+      min-width: 160px;
+    }
+    .choice-btn:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(91,110,245,.15); }
+    .choice-btn .idx { font-size: 1rem; }
+
+    .choice-btn.correct { background: var(--correct); border-color: #1da862; color: #fff; }
+    .choice-btn.wrong   { background: var(--wrong);   border-color: #e03558; color: #fff; }
+    .choice-btn.highlight{ background: var(--correct); border-color: var(--accent); color: #fff; }
+
+    /* ── Loading Dots ── */
+    .loading-wrap {
+      display: flex; align-items: center; gap: 8px;
+      padding: 24px;
+      background: var(--bg);
+      border-radius: 16px;
+      width: fit-content;
+    }
+    .dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .dot:nth-child(2) { animation-delay: .13s; }
+    .dot:nth-child(3) { animation-delay: .27s; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1);   opacity: 1; }
+      50%       { transform: scale(1.5); opacity: .5; }
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: .85rem;
+    }
+    th {
+      background: var(--btn-default);
+      color: var(--primary);
+      font-weight: 700; text-align: left;
+      padding: 12px 16px;
+    }
+    th:first-child { border-radius: 10px 0 0 0; }
+    th:last-child  { border-radius: 0 10px 0 0; }
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid #eef0fb;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafbff; }
+
+    code {
+      font-family: 'Consolas', 'Fira Code', monospace;
+      background: var(--btn-default);
+      color: var(--primary);
+      padding: 2px 6px; border-radius: 6px;
+      font-size: .82em;
+    }
+
+    /* ── Tree ── */
+    .tree {
+      background: #1e1e2e;
+      color: #c8d3f5;
+      border-radius: 16px;
+      padding: 24px;
+      font-family: 'Consolas', monospace;
+      font-size: .82rem;
+      line-height: 1.9;
+      overflow-x: auto;
+    }
+    .tree .comp  { color: #7fc6ff; }
+    .tree .atom  { color: #ff9d3f; }
+    .tree .leaf  { color: #a9dc76; }
+    .tree .note  { color: #6c7592; }
+
+    /* ── Swipe Spec Visual ── */
+    .swipe-vis {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0;
+    }
+    .swipe-card-demo {
+      width: 200px; height: 100px;
+      border-radius: 16px;
+      background: var(--card);
+      border: 2px solid #c5c8f0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; color: var(--text-sec);
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+    .swipe-arrow-vis {
+      font-size: 1.4rem; color: var(--accent);
+      padding: 6px 0;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: .75rem; font-weight: 700;
+      background: var(--btn-default); color: var(--primary);
+    }
+    .badge.accent  { background: #fff2ec; color: var(--accent); }
+    .badge.correct { background: #e6faf2; color: var(--correct); }
+    .badge.wrong   { background: #ffeef2; color: var(--wrong); }
+
+    /* ── Panel Preview ── */
+    .panel-preview-wrap {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    }
+    .panel-preview {
+      width: 200px;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 20px 16px;
+      box-shadow: 0 4px 20px rgba(91,110,245,.1);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .panel-label {
+      font-size: .65rem; font-weight: 700;
+      color: #fff; background: var(--primary);
+      padding: 3px 10px; border-radius: 20px;
+      text-align: center; width: fit-content; align-self: center;
+    }
+
+    /* topic buttons */
+    .topic-btn {
+      background: var(--btn-default);
+      border: 1.5px solid #c5c8f0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: .72rem; font-weight: 600; color: var(--text);
+      text-align: center; cursor: pointer;
+      transition: background .15s;
+    }
+    .topic-btn:hover { background: #dde2ff; }
+
+    /* loading panel */
+    .loading-panel-inner {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      padding: 12px 0;
+    }
+    .loading-dots-mini {
+      display: flex; gap: 6px;
+    }
+    .dot-mini {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--primary);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .dot-mini:nth-child(2) { animation-delay: .13s; }
+    .dot-mini:nth-child(3) { animation-delay: .27s; }
+
+    /* gameplay */
+    .q-text {
+      font-size: .7rem; color: var(--text); font-weight: 600;
+      text-align: center; line-height: 1.4;
+    }
+    .mini-choice {
+      background: var(--btn-default);
+      border: 1.5px solid #c5c8f0;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: .65rem; color: var(--text);
+      display: flex; gap: 6px; align-items: center;
+    }
+    .mini-choice.c { background: var(--correct); border-color: #1da862; color: #fff; }
+
+    /* result */
+    .result-title { font-size: 1.1rem; font-weight: 800; text-align: center; }
+    .result-score { font-size: .8rem; font-weight: 700; text-align: center; color: var(--primary); }
+    .result-comment { font-size: .62rem; color: var(--text-sec); text-align: center; line-height: 1.4; }
+    .restart-btn {
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 12px;
+      padding: 8px; font-size: .72rem; font-weight: 700;
+      cursor: pointer; transition: opacity .15s;
+    }
+    .restart-btn:hover { opacity: .85; }
+
+    /* ── Text Sizes ── */
+    .text-size-row { display: flex; align-items: baseline; gap: 16px; padding: 10px 0; border-bottom: 1px solid #eef0fb; }
+    .text-size-row:last-child { border-bottom: none; }
+    .text-swatch { font-weight: 700; color: var(--text); white-space: nowrap; }
+    .text-meta   { font-size: .8rem; color: var(--text-sec); }
+
+    /* ── Resolution spec ── */
+    .res-box {
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    }
+    .res-phone {
+      width: 80px; height: 142px;
+      border: 3px solid var(--text);
+      border-radius: 16px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; color: var(--text-sec); font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px;
+      font-size: .8rem;
+      color: var(--text-sec);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 AI Mini Arcade</h1>
+  <p>UI/UX 스펙 문서 — 스와이프 카드 인터페이스 디자인 시스템</p>
+</header>
+
+<nav>
+  <a href="#concept">컨셉</a>
+  <a href="#colors">컬러</a>
+  <a href="#panels">패널 미리보기</a>
+  <a href="#components">컴포넌트</a>
+  <a href="#swipe">스와이프</a>
+  <a href="#typography">타이포그래피</a>
+  <a href="#structure">파일 구조</a>
+</nav>
+
+<main>
+
+  <!-- 1. 컨셉 -->
+  <section id="concept">
+    <h2>1. 컨셉 — 스와이프 카드 UI</h2>
+    <div class="card concept-wrap">
+      <div class="phone-mock">
+        <div class="phone-screen">
+          <div class="phone-card">
+            <div class="label">미니게임 A</div>
+            <div class="sublabel">퀴즈</div>
+          </div>
+          <div class="swipe-arrow">↕ 스와이프</div>
+          <div class="phone-card">
+            <div class="label">미니게임 B</div>
+            <div class="sublabel">NPC 대화</div>
+          </div>
+        </div>
+      </div>
+      <div class="concept-text">
+        <ul class="bullet-list">
+          <li>YouTube Shorts · Instagram Reels 방식의 <strong>풀스크린 카드 UI</strong></li>
+          <li>각 미니게임이 독립된 카드로 존재 → 위아래 스와이프로 전환</li>
+          <li>스와이프 전환 시 현재 게임 상태 <strong>초기화</strong></li>
+          <li>AI 응답 대기 중 → <strong>점 세 개 로딩 애니메이션</strong></li>
+          <li>하단 고정 버튼: <strong>재시작</strong> / <strong>공유</strong></li>
+          <li>해상도: <code>1080 × 1920</code> (9:16), Canvas Scaler: Scale With Screen Size</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 컬러 -->
+  <section id="colors">
+    <h2>2. 컬러 팔레트</h2>
+    <div class="card">
+      <div class="palette-grid">
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#f0f4ff"></div>
+          <div class="color-info">
+            <div class="color-name">Background</div>
+            <div class="color-hex">#f0f4ff</div>
+            <div class="color-desc">연한 라벤더 화이트</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#ffffff; border:1px solid #eef0fb"></div>
+          <div class="color-info">
+            <div class="color-name">Card BG</div>
+            <div class="color-hex">#ffffff</div>
+            <div class="color-desc">카드/패널 배경</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#5b6ef5"></div>
+          <div class="color-info">
+            <div class="color-name">Primary</div>
+            <div class="color-hex">#5b6ef5</div>
+            <div class="color-desc">인디고 바이올렛</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#ff6b35"></div>
+          <div class="color-info">
+            <div class="color-name">Accent</div>
+            <div class="color-hex">#ff6b35</div>
+            <div class="color-desc">비비드 오렌지</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#1e1e2e"></div>
+          <div class="color-info">
+            <div class="color-name">Text</div>
+            <div class="color-hex">#1e1e2e</div>
+            <div class="color-desc">딥 네이비</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#7c7f9e"></div>
+          <div class="color-info">
+            <div class="color-name">Text Secondary</div>
+            <div class="color-hex">#7c7f9e</div>
+            <div class="color-desc">블루그레이</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#29c77a"></div>
+          <div class="color-info">
+            <div class="color-name">Correct</div>
+            <div class="color-hex">#29c77a</div>
+            <div class="color-desc">민트 그린 (정답)</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#ff4d6d"></div>
+          <div class="color-info">
+            <div class="color-name">Wrong</div>
+            <div class="color-hex">#ff4d6d</div>
+            <div class="color-desc">코랄 레드 (오답)</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#eff1ff"></div>
+          <div class="color-info">
+            <div class="color-name">Button Default BG</div>
+            <div class="color-hex">#eff1ff</div>
+            <div class="color-desc">페일 퍼플</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Choice Button States -->
+      <h3 style="margin-top:28px; margin-bottom:16px;">선택지 버튼 상태</h3>
+      <div class="btn-demo">
+        <button class="choice-btn">
+          <span class="idx">①</span><span>기본 상태 선택지</span>
+        </button>
+        <button class="choice-btn correct">
+          <span class="idx">②</span><span>정답 선택</span>
+        </button>
+        <button class="choice-btn wrong">
+          <span class="idx">③</span><span>오답 선택</span>
+        </button>
+        <button class="choice-btn highlight">
+          <span class="idx">④</span><span>정답 하이라이트</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 패널 미리보기 -->
+  <section id="panels">
+    <h2>3. 퀴즈 게임 UI 패널</h2>
+    <div class="card">
+      <div class="panel-preview-wrap">
+
+        <!-- ① 주제 선택 -->
+        <div class="panel-preview">
+          <div class="panel-label">① TopicSelect</div>
+          <div style="font-size:.8rem; font-weight:700; text-align:center; color:var(--text); margin:4px 0 8px;">주제를 선택하세요</div>
+          <button class="topic-btn">🌍 세계 역사</button>
+          <button class="topic-btn">🔬 과학 상식</button>
+          <button class="topic-btn">🎬 영화 / 드라마</button>
+          <button class="topic-btn">⚽ 스포츠</button>
+          <button class="topic-btn">🎵 K-POP</button>
+        </div>
+
+        <!-- ② 로딩 -->
+        <div class="panel-preview">
+          <div class="panel-label">② Loading</div>
+          <div class="loading-panel-inner">
+            <div style="font-size:.72rem; color:var(--text-sec); text-align:center; line-height:1.5;">문제를 생성하고<br>있습니다</div>
+            <div class="loading-dots-mini">
+              <div class="dot-mini"></div>
+              <div class="dot-mini"></div>
+              <div class="dot-mini"></div>
+            </div>
+            <div style="font-size:.62rem; color:#c5c8f0;">AI가 맞춤형 퀴즈를 만드는 중...</div>
+          </div>
+        </div>
+
+        <!-- ③ 게임플레이 -->
+        <div class="panel-preview">
+          <div class="panel-label">③ Gameplay</div>
+          <div class="q-text">대한민국의 수도는 어디일까요?</div>
+          <div class="mini-choice c"><span>①</span><span>서울특별시</span></div>
+          <div class="mini-choice"><span>②</span><span>부산광역시</span></div>
+          <div class="mini-choice"><span>③</span><span>인천광역시</span></div>
+          <div class="mini-choice"><span>④</span><span>대전광역시</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.62rem;font-weight:700;color:var(--text-sec);margin-top:4px;">
+            <span>⏱ 20s</span><span>★ 0/5</span>
+          </div>
+        </div>
+
+        <!-- ④ 결과 -->
+        <div class="panel-preview">
+          <div class="panel-label">④ Result</div>
+          <div class="result-title">🎉 클리어!</div>
+          <div class="result-score">4 / 5 정답</div>
+          <div class="result-comment">훌륭합니다! 역사 지식이 상당하시네요.</div>
+          <button class="restart-btn">↩ 다시 하기</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 컴포넌트 -->
+  <section id="components">
+    <h2>4. LeanGUI 컴포넌트 기준</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>로딩 인디케이터</h3>
+        <div style="margin-bottom:16px;">
+          <div class="loading-wrap">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+        <table>
+          <tr><th>Dot</th><th>TimeInterval</th><th>Delay Offset</th></tr>
+          <tr><td>Dot_0</td><td>0.4s</td><td>0.0s</td></tr>
+          <tr><td>Dot_1</td><td>0.4s</td><td>0.13s</td></tr>
+          <tr><td>Dot_2</td><td>0.4s</td><td>0.27s</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>LeanGUI 컴포넌트 매핑</h3>
+        <table>
+          <tr><th>상황</th><th>컴포넌트</th></tr>
+          <tr><td>모든 버튼</td><td><code>LeanButton</code></td></tr>
+          <tr><td>선택지 버튼</td><td><code>ChoiceButton.prefab</code></td></tr>
+          <tr><td>패널 전환</td><td><code>LeanToggle</code></td></tr>
+          <tr><td>로딩 점 애니</td><td><code>LeanPulse</code></td></tr>
+          <tr><td>카드 스와이프</td><td><code>LeanSwipe</code></td></tr>
+          <tr><td>노치 대응</td><td><code>LeanSafeArea</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- LeanToggle -->
+    <div class="card" style="margin-top:20px;">
+      <h3>LeanToggle 설정 — 패널 표시/숨김</h3>
+      <table>
+        <tr><th>방향</th><th>Transition</th><th>시간</th><th>비고</th></tr>
+        <tr><td>On</td><td>alpha 0 → 1</td><td>200ms</td><td>TurnOffSiblings = false</td></tr>
+        <tr><td>Off</td><td>alpha 1 → 0</td><td>150ms</td><td></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 5. 스와이프 -->
+  <section id="swipe">
+    <h2>5. 스와이프 인터랙션 스펙</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>스와이프 시각화</h3>
+        <div class="swipe-vis" style="padding:16px 0;">
+          <div class="swipe-card-demo" style="opacity:.4;">이전 카드</div>
+          <div class="swipe-arrow-vis">↑ 위 드래그 → 다음 카드</div>
+          <div class="swipe-card-demo" style="box-shadow:0 8px 32px rgba(91,110,245,.25); border-color:var(--primary);">현재 카드</div>
+          <div class="swipe-arrow-vis">↓ 아래 드래그 → 이전 카드</div>
+          <div class="swipe-card-demo" style="opacity:.4;">다음 카드</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>스와이프 규칙</h3>
+        <table>
+          <tr><th>항목</th><th>값</th></tr>
+          <tr><td>전환 임계값</td><td>화면 높이의 <strong>30%</strong> 이상</td></tr>
+          <tr><td>미달 드래그</td><td>원위치 복귀</td></tr>
+          <tr><td>첫 카드 아래</td><td>제자리 고정</td></tr>
+          <tr><td>마지막 카드 위</td><td>제자리 고정</td></tr>
+          <tr><td>전환 시간</td><td><strong>300ms</strong>, ease-out</td></tr>
+          <tr><td>구현</td><td><code>CardSwipeController.cs</code></td></tr>
+        </table>
+
+        <h3 style="margin-top:20px;">LeanSwipe 설정값</h3>
+        <table>
+          <tr><th>방향</th><th>DesiredAngle</th><th>MinDist</th><th>MaxTime</th></tr>
+          <tr><td>위 (다음)</td><td><code>0</code></td><td>200px</td><td>0.25s</td></tr>
+          <tr><td>아래 (이전)</td><td><code>180</code></td><td>200px</td><td>0.25s</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 타이포그래피 -->
+  <section id="typography">
+    <h2>6. 텍스트 사이즈 스펙</h2>
+    <div class="card">
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:2rem;">화면 타이틀</span>
+        <span class="text-meta">size 100 · Bold</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:1.8rem;">🎉 클리어! / 😢 실패</span>
+        <span class="text-meta">size 100 · Bold · 결과 타이틀</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:1.5rem;">3 / 5 정답</span>
+        <span class="text-meta">size 72 · Bold · 결과 점수</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:1.25rem;">대한민국의 수도는 어디일까요?</span>
+        <span class="text-meta">size 60 · Regular · 문제 텍스트</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:1.25rem; font-weight:600;">다시 하기</span>
+        <span class="text-meta">size 60 · Medium · 버튼 텍스트</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:1.1rem; font-weight:700;">⏱ 18s &nbsp; ★ 0점</span>
+        <span class="text-meta">size 52 · Bold · 타이머 / 점수</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:1.1rem;">AI 총평 코멘트 텍스트입니다.</span>
+        <span class="text-meta">size 52 · Regular · 결과 코멘트</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:1rem; font-weight:600;">① 서울특별시</span>
+        <span class="text-meta">size 56 · Medium · 선택지 버튼 텍스트</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:.9rem;">🌍 세계 역사 &nbsp; 1 / 5</span>
+        <span class="text-meta">size 48 · Regular · 주제 뱃지 / 카운터</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:.9rem;">① ② ③ ④</span>
+        <span class="text-meta">size 48 · Regular · 선택지 번호 (IndexLabel)</span>
+      </div>
+      <div class="text-size-row">
+        <span class="text-swatch" style="font-size:.9rem; color:var(--text-sec);">정답은 서울특별시입니다. 대한민국의 수도입니다.</span>
+        <span class="text-meta">size 48 · Regular · 해설 텍스트</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 파일 구조 -->
+  <section id="structure">
+    <h2>7. 파일 구조</h2>
+
+    <div class="grid-2">
+      <!-- Prefab Tree -->
+      <div>
+        <h3 style="margin-bottom:12px;">프리팹 구조</h3>
+        <div class="tree">
+<span class="comp">CardContainer.prefab</span>  <span class="note">(LeanSwipe 루트)</span>
+├── <span class="leaf">GameCard_0</span>  <span class="note">(QuizGame.prefab)</span>
+├── <span class="leaf">GameCard_1</span>  <span class="note">(NpcChat — Phase 2)</span>
+└── <span class="leaf">GameCard_2</span>  <span class="note">(StoryRelay — Phase 2)</span>
+
+<span class="comp">QuizGame.prefab</span>  <span class="note">(QuizGame.cs)</span>
+├── <span class="atom">QuizTopicSelect.prefab</span>  <span class="note">패널 1</span>
+├── <span class="atom">QuizLoading.prefab</span>      <span class="note">패널 2</span>
+├── <span class="atom">QuizGameplay.prefab</span>     <span class="note">패널 3</span>
+└── <span class="atom">QuizResult.prefab</span>       <span class="note">패널 4</span>
+
+<span class="leaf">Atoms/</span>
+├── <span class="leaf">ChoiceButton.prefab</span>
+└── <span class="leaf">LoadingDot.prefab</span>
+        </div>
+      </div>
+
+      <!-- File Path Tree -->
+      <div>
+        <h3 style="margin-bottom:12px;">디렉토리 구조</h3>
+        <div class="tree">
+Assets/UI/
+└── Prefabs/
+    ├── <span class="comp">Common/</span>
+    │   └── <span class="leaf">CardContainer.prefab</span>
+    ├── <span class="atom">Atoms/</span>
+    │   ├── <span class="leaf">ChoiceButton.prefab</span>
+    │   └── <span class="leaf">LoadingDot.prefab</span>
+    └── <span class="comp">Quiz/</span>
+        ├── <span class="leaf">QuizGame.prefab</span>
+        ├── <span class="leaf">QuizTopicSelect.prefab</span>
+        ├── <span class="leaf">QuizLoading.prefab</span>
+        ├── <span class="leaf">QuizGameplay.prefab</span>
+        └── <span class="leaf">QuizResult.prefab</span>
+
+Assets/Scripts/
+└── Core/
+    └── <span class="atom">CardSwipeController.cs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ChoiceButton Structure -->
+    <div class="card" style="margin-top:20px;">
+      <h3>ChoiceButton.prefab 구조</h3>
+      <div class="tree" style="margin-top:12px;">
+<span class="comp">ChoiceButton</span> <span class="note">(LeanButton)</span>
+  ├── <span class="atom">Background</span> <span class="note">(Image)  default: #eff1ff / correct: #29c77a / wrong: #ff4d6d</span>
+  ├── <span class="leaf">IndexLabel</span> <span class="note">(TMP, size 48)  "① ② ③ ④"</span>
+  └── <span class="leaf">ChoiceText</span>  <span class="note">(TMP, size 56)  선택지 내용</span>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="card" style="margin-top:20px; border-left: 4px solid var(--accent);">
+      <h3 style="color:var(--accent);">Phase 2 — NPC 대화 / 스토리 릴레이</h3>
+      <div class="tree" style="margin-top:12px;">
+<span class="comp">NpcChatGame.prefab</span>
+  ├── <span class="leaf">NpcTopicSelect.prefab</span>
+  ├── <span class="leaf">NpcChat.prefab</span>
+  └── <span class="leaf">NpcResult.prefab</span>
+
+<span class="comp">StoryRelayGame.prefab</span>
+  ├── <span class="leaf">StoryGenreSelect.prefab</span>
+  ├── <span class="leaf">StoryRelay.prefab</span>
+  └── <span class="leaf">StoryResult.prefab</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  AI Mini Arcade — UI/UX Spec · Generated from <code>Docs/UI.md</code>
+</footer>
+
+</body>
+</html>

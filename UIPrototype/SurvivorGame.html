@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SurvivorGame UI Prototype</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── 리셋 & 기본 ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #0a0a14;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 24px 16px 40px;
+      gap: 20px;
+    }
+
+    /* ── 패널 전환 버튼 ─────────────────────────── */
+    .state-tabs {
+      display: flex;
+      gap: 8px;
+      background: #1a1a2e;
+      padding: 6px;
+      border-radius: 12px;
+    }
+    .state-tabs button {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #7c7f9e;
+      background: transparent;
+      transition: all 0.2s;
+    }
+    .state-tabs button.active {
+      background: #5b6ef5;
+      color: #fff;
+    }
+
+    /* ── 폰 목업 ────────────────────────────────── */
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 780px;
+      border-radius: 40px;
+      border: 3px solid #2a2a3e;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(91,110,245,0.25);
+    }
+
+    /* ── 게임 월드 배경 ──────────────────────────── */
+    .game-world {
+      position: absolute;
+      inset: 0;
+      background: #0d1117;
+      overflow: hidden;
+    }
+    .game-world canvas {
+      position: absolute;
+      inset: 0;
+    }
+    /* 플레이어 */
+    .player {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #a0c4ff, #5b6ef5);
+      box-shadow: 0 0 12px rgba(91,110,245,0.8);
+      left: 50%;
+      top: 55%;
+      transform: translate(-50%, -50%);
+    }
+    /* EXP 오브들 */
+    .orb {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3498db;
+      box-shadow: 0 0 6px #3498db;
+      animation: float 2s ease-in-out infinite alternate;
+    }
+    @keyframes float {
+      from { transform: translateY(0); opacity: 0.8; }
+      to   { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── survivor-root (UI Toolkit overlay) ───── */
+    /* UXML 클래스명 그대로 사용 */
+    .survivor-root {
+      position: absolute;
+      inset: 0;
+      background: transparent;
+    }
+
+    /* ── hud-panel ───────────────────────────── */
+    .hud-panel {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* top-bar */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+    }
+    .top-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* hp-bar-container */
+    .hp-bar-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hp-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .hp-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .hp-bar-fill {
+      height: 100%;
+      width: 75%;
+      background: #e74c3c;
+      border-radius: 5px;
+      transition: width 0.3s;
+      position: relative;
+    }
+    .hp-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      background: rgba(255,255,255,0.3);
+      border-radius: 5px 5px 0 0;
+    }
+    /* HP 위험 깜박임 */
+    .hp-danger .hp-bar-fill {
+      animation: hp-blink 0.5s ease-in-out infinite alternate;
+    }
+    @keyframes hp-blink {
+      from { opacity: 1; }
+      to   { opacity: 0.4; }
+    }
+
+    /* timer-label, kill-label */
+    .timer-label {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      min-width: 50px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .timer-label.boss-incoming {
+      color: #e74c3c;
+      animation: shake 0.1s ease-in-out infinite alternate;
+    }
+    @keyframes shake {
+      from { transform: translateX(-2px); }
+      to   { transform: translateX(2px); }
+    }
+    .kill-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      min-width: 56px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* exp-bar-container */
+    .exp-bar-container {
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .exp-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .exp-bar-fill {
+      height: 100%;
+      width: 60%;
+      background: linear-gradient(90deg, #3498db, #a0c4ff);
+      border-radius: 3px;
+      transition: width 0.4s;
+    }
+    .level-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #a0c4ff;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* joystick-area */
+    .joystick-area {
+      position: absolute;
+      bottom: 40px;
+      left: 24px;
+      width: 110px;
+      height: 110px;
+      border-radius: 55px;
+      background: rgba(255,255,255,0.1);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+    .joystick-handle {
+      width: 46px;
+      height: 46px;
+      border-radius: 23px;
+      background: rgba(255,255,255,0.35);
+      border: 1.5px solid rgba(255,255,255,0.5);
+      transform: translate(10px, -8px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: transform 0.05s;
+    }
+
+    /* ── upgrade-panel ───────────────────────── */
+    .upgrade-panel {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 24px;
+    }
+    .upgrade-panel.visible { display: flex; }
+
+    .upgrade-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .upgrade-subtitle {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-top: -14px;
+    }
+    .upgrade-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+    /* upgrade-card */
+    .upgrade-card {
+      width: 100%;
+      background: #1a1a2e;
+      border-radius: 14px;
+      border: 2px solid transparent;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .upgrade-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+    .upgrade-card.new    { border-color: #ffd700; }
+    .upgrade-card.evolve { border-color: #5b6ef5; }
+
+    .weapon-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .icon-shotgun  { background: rgba(231,76,60,0.2); }
+    .icon-orb      { background: rgba(52,152,219,0.2); }
+    .icon-missile  { background: rgba(255,214,0,0.2); }
+
+    .weapon-info { flex: 1; }
+    .weapon-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .weapon-level {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    .weapon-level.new    { color: #ffd700; }
+    .weapon-level.evolve { color: #5b6ef5; }
+    .weapon-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* ── result-panel ────────────────────────── */
+    .result-panel {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.87);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 32px 24px;
+    }
+    .result-panel.visible { display: flex; }
+
+    .result-title {
+      font-size: 40px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .result-divider {
+      width: 60px;
+      height: 2px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 1px;
+      margin: 4px 0 16px;
+    }
+
+    .result-stats {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-label {
+      font-size: 15px;
+      color: rgba(255,255,255,0.55);
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .stat-row.score .stat-label { color: #ffd700; }
+    .stat-row.score .stat-value {
+      font-size: 28px;
+      color: #ffd700;
+    }
+
+    /* restart-button */
+    .restart-button {
+      margin-top: 12px;
+      width: 200px;
+      height: 56px;
+      background: #5b6ef5;
+      border: none;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(91,110,245,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .restart-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(91,110,245,0.6);
+    }
+    .restart-button:active { transform: translateY(0); }
+
+    /* ── 라벨 설명 ───────────────────────────── */
+    .annotations {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 390px;
+    }
+    .ann-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #7c7f9e;
+    }
+    .ann-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 패널 전환 탭 -->
+  <div class="state-tabs">
+    <button class="active" onclick="showState('hud')">🎮 HUD (게임 중)</button>
+    <button onclick="showState('upgrade')">⬆️ 레벨업</button>
+    <button onclick="showState('result')">💀 게임 오버</button>
+  </div>
+
+  <!-- 폰 목업 -->
+  <div class="phone">
+
+    <!-- 게임 월드 배경 -->
+    <div class="game-world" id="gameWorld">
+      <canvas id="bgCanvas" width="390" height="780"></canvas>
+      <div class="player"></div>
+      <!-- EXP 오브 -->
+      <div class="orb" style="left:45%;top:48%;animation-delay:0.1s"></div>
+      <div class="orb" style="left:38%;top:52%;animation-delay:0.3s"></div>
+      <div class="orb" style="left:55%;top:58%;animation-delay:0.6s"></div>
+      <div class="orb" style="left:60%;top:45%;animation-delay:0.9s"></div>
+    </div>
+
+    <!-- survivor-root (UI Toolkit UXML 계층 그대로) -->
+    <div class="survivor-root">
+
+      <!-- hud-panel -->
+      <div class="hud-panel">
+
+        <div class="top-bar">
+          <!-- top-row: hp + timer + kill -->
+          <div class="top-row">
+            <div class="hp-bar-container" id="hpContainer">
+              <div class="hp-label">HP 75 / 100</div>
+              <div class="hp-bar-bg">
+                <div class="hp-bar-fill" id="hpFill" style="width:75%"></div>
+              </div>
+            </div>
+            <div class="timer-label" id="timerLabel">01:23</div>
+            <div class="kill-label">처치 42</div>
+          </div>
+
+          <!-- exp-bar -->
+          <div class="exp-bar-container">
+            <div class="exp-bar-bg">
+              <div class="exp-bar-fill" id="expFill" style="width:60%"></div>
+            </div>
+            <div class="level-label">Lv.3</div>
+          </div>
+        </div>
+
+        <!-- joystick-area -->
+        <div class="joystick-area" id="joystickArea">
+          <div class="joystick-handle" id="joystickHandle"></div>
+        </div>
+
+      </div><!-- /hud-panel -->
+
+      <!-- upgrade-panel (UXML: display:none 기본) -->
+      <div class="upgrade-panel" id="upgradePanel">
+        <div class="upgrade-title">무기를 선택하세요</div>
+        <div class="upgrade-subtitle">레벨업! Lv.3 → Lv.4</div>
+
+        <div class="upgrade-cards">
+
+          <!-- upgrade-card-0: 샷건 NEW -->
+          <div class="upgrade-card new">
+            <div class="weapon-icon icon-shotgun">🔫</div>
+            <div class="weapon-info">
+              <div class="weapon-name">샷건</div>
+              <div class="weapon-level new">NEW</div>
+              <div class="weapon-desc">3방향 산탄 — 레벨업 시 발사 수 +1</div>
+            </div>
+          </div>
+
+          <!-- upgrade-card-1: 오브 강화 -->
+          <div class="upgrade-card evolve">
+            <div class="weapon-icon icon-orb">🔵</div>
+            <div class="weapon-info">
+              <div class="weapon-name">오브</div>
+              <div class="weapon-level evolve">Lv.1 → Lv.2</div>
+              <div class="weapon-desc">회전 구체 — 레벨업 시 구체 수 +1</div>
+            </div>
+          </div>
+
+          <!-- upgrade-card-2: 미사일 NEW -->
+          <div class="upgrade-card new">
+            <div class="weapon-icon icon-missile">🚀</div>
+            <div class="weapon-info">
+              <div class="weapon-name">미사일</div>
+              <div class="weapon-level new">NEW</div>
+              <div class="weapon-desc">유도 추적 — 레벨업 시 데미지 +50%</div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /upgrade-panel -->
+
+      <!-- result-panel (UXML: display:none 기본) -->
+      <div class="result-panel" id="resultPanel">
+        <div class="result-title">💀 게임 오버</div>
+        <div class="result-divider"></div>
+
+        <div class="result-stats">
+          <div class="stat-row">
+            <span class="stat-label">생존 시간</span>
+            <span class="stat-value">02:37</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">처치 수</span>
+            <span class="stat-value">58</span>
+          </div>
+          <div class="stat-row score">
+            <span class="stat-label">점수</span>
+            <span class="stat-value">1,697</span>
+          </div>
+        </div>
+
+        <button class="restart-button">다시 하기</button>
+      </div><!-- /result-panel -->
+
+    </div><!-- /survivor-root -->
+  </div><!-- /phone -->
+
+  <!-- 주석 -->
+  <div class="annotations">
+    <div class="ann-row">
+      <div class="ann-dot" style="background:#e74c3c"></div>
+      <span>hp-bar-fill — 위험(30% 이하) 시 깜박임 애니메이션</span>
+    </div>
+    <div class="ann-row">
+      <div class="ann-dot" style="background:#3498db"></div>
+      <span>exp-bar-fill — 레벨업 후 0%로 초기화</span>
+    </div>
+    <div class="ann-row">
+      <div class="ann-dot" style="background:rgba(255,255,255,0.35)"></div>
+      <span>joystick-area — UI Toolkit PointerEvent 수신</span>
+    </div>
+    <div class="ann-row">
+      <div class="ann-dot" style="background:#ffd700"></div>
+      <span>upgrade-card.new — 골드 테두리 (신규 무기)</span>
+    </div>
+    <div class="ann-row">
+      <div class="ann-dot" style="background:#5b6ef5"></div>
+      <span>upgrade-card.evolve — 인디고 테두리 (강화)</span>
+    </div>
+  </div>
+
+  <script>
+    // ── 패널 전환 ─────────────────────────────────
+    function showState(state) {
+      const upgradePanel = document.getElementById('upgradePanel');
+      const resultPanel  = document.getElementById('resultPanel');
+      const tabs = document.querySelectorAll('.state-tabs button');
+
+      upgradePanel.classList.remove('visible');
+      resultPanel.classList.remove('visible');
+      tabs.forEach(b => b.classList.remove('active'));
+
+      if (state === 'upgrade') {
+        upgradePanel.classList.add('visible');
+        tabs[1].classList.add('active');
+      } else if (state === 'result') {
+        resultPanel.classList.add('visible');
+        tabs[2].classList.add('active');
+      } else {
+        tabs[0].classList.add('active');
+      }
+    }
+
+    // ── 조이스틱 인터랙션 (데모) ──────────────────
+    const area   = document.getElementById('joystickArea');
+    const handle = document.getElementById('joystickHandle');
+    const RADIUS = 32;
+    let dragging = false, originX = 0, originY = 0;
+
+    area.addEventListener('pointerdown', e => {
+      dragging = true;
+      const r = area.getBoundingClientRect();
+      originX = r.left + r.width  / 2;
+      originY = r.top  + r.height / 2;
+      area.setPointerCapture(e.pointerId);
+      moveHandle(e.clientX, e.clientY);
+    });
+    area.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      moveHandle(e.clientX, e.clientY);
+    });
+    area.addEventListener('pointerup', () => {
+      dragging = false;
+      handle.style.transform = 'translate(0, 0)';
+    });
+
+    function moveHandle(cx, cy) {
+      let dx = cx - originX;
+      let dy = cy - originY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > RADIUS) {
+        dx = dx / dist * RADIUS;
+        dy = dy / dist * RADIUS;
+      }
+      handle.style.transform = `translate(${dx}px, ${dy}px)`;
+    }
+
+    // ── 배경 파티클 캔버스 ────────────────────────
+    const canvas = document.getElementById('bgCanvas');
+    const ctx    = canvas.getContext('2d');
+    const enemies = Array.from({ length: 18 }, () => ({
+      x: Math.random() * 390,
+      y: Math.random() * 780,
+      r: 5 + Math.random() * 8,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      color: ['#e74c3c','#c0392b','#922b21','#7b241c'][Math.floor(Math.random()*4)],
+    }));
+
+    // 그리드 타일 (맵 느낌)
+    function drawGrid() {
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= 390; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 780); ctx.stroke();
+      }
+      for (let y = 0; y <= 780; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(390, y); ctx.stroke();
+      }
+    }
+
+    function animateBg() {
+      ctx.clearRect(0, 0, 390, 780);
+      // 배경
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, 390, 780);
+      drawGrid();
+
+      // 적 (빨간 원)
+      enemies.forEach(e => {
+        e.x += e.vx; e.y += e.vy;
+        if (e.x < 0 || e.x > 390) e.vx *= -1;
+        if (e.y < 0 || e.y > 780) e.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fillStyle = e.color;
+        ctx.fill();
+        // 글로우
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = e.color + '55';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+      requestAnimationFrame(animateBg);
+    }
+    animateBg();
+
+    // ── HP 슬라이더 (데모) ────────────────────────
+    let hp = 75;
+    setInterval(() => {
+      hp = Math.max(5, Math.min(100, hp + (Math.random() > 0.5 ? -3 : 1)));
+      const fill = document.getElementById('hpFill');
+      const cont = document.getElementById('hpContainer');
+      const label = cont.querySelector('.hp-label');
+      fill.style.width = hp + '%';
+      label.textContent = `HP ${hp} / 100`;
+      if (hp <= 30) cont.classList.add('hp-danger');
+      else          cont.classList.remove('hp-danger');
+    }, 800);
+
+    // ── 타이머 카운트업 ───────────────────────────
+    let seconds = 83; // 01:23 부터 시작
+    setInterval(() => {
+      seconds++;
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      const el = document.getElementById('timerLabel');
+      el.textContent = `${m}:${s}`;
+      if (seconds >= 120) el.classList.add('boss-incoming');
+    }, 1000);
+
+    // ── EXP 바 애니메이션 ─────────────────────────
+    let exp = 60;
+    setInterval(() => {
+      exp = (exp + 5) % 100;
+      document.getElementById('expFill').style.width = exp + '%';
+    }, 600);
+  </script>
+</body>
+</html>
