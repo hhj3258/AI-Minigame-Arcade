@@ -1,0 +1,65 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Games/QuizGame/UI/QuizPanels.uss?fileID=7433441132597879392&amp;guid=d275ec2ff312e004c8970dba8ce83e9f&amp;type=3#QuizPanels"/>
+    <ui:VisualElement class="root">
+        <ui:VisualElement class="tab-nav">
+            <ui:Button name="tab-topic" text="① 주제선택" class="tab active"/>
+            <ui:Button name="tab-loading" text="② 로딩" class="tab"/>
+            <ui:Button name="tab-gameplay" text="③ 게임플레이" class="tab"/>
+            <ui:Button name="tab-result" text="④ 결과" class="tab"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="panel-topic" enabled="true" class="panel-full hidden">
+            <ui:VisualElement class="topic-title-wrap">
+                <ui:Label text="주제를 선택하세요" class="panel-title"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="topic-list">
+                <ui:Button text="🌍 세계 역사" class="topic-btn"/>
+                <ui:Button text="🔬 과학 상식" class="topic-btn"/>
+                <ui:Button text="🎬 영화 / 드라마" class="topic-btn"/>
+                <ui:Button text="⚽ 스포츠" class="topic-btn"/>
+                <ui:Button text="🎵 K-POP" class="topic-btn"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="panel-loading" class="panel-full hidden">
+            <ui:VisualElement class="loading-center">
+                <ui:Label text="문제를 생성하고&#10;있습니다" class="loading-text"/>
+                <ui:VisualElement class="dots-row">
+                    <ui:VisualElement name="dot-0" class="dot"/>
+                    <ui:VisualElement name="dot-1" class="dot"/>
+                    <ui:VisualElement name="dot-2" class="dot"/>
+                </ui:VisualElement>
+                <ui:Label text="AI가 맞춤형 퀴즈를 만드는 중..." class="loading-sub"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="panel-gameplay" class="panel-full">
+            <ui:VisualElement class="gameplay-header">
+                <ui:Label text="🌍 세계 역사" class="topic-badge"/>
+                <ui:Label text="2 / 5" class="counter-text"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="question-wrap">
+                <ui:Label text="대한민국의 수도는 어디일까요?" class="question-text"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="choices">
+                <ui:Button text="① 서울특별시" class="choice-btn correct"/>
+                <ui:Button text="② 부산광역시" class="choice-btn"/>
+                <ui:Button text="③ 인천광역시" class="choice-btn wrong"/>
+                <ui:Button text="④ 대전광역시" class="choice-btn"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="explanation-box hidden">
+                <ui:Label text="💡 서울은 조선 시대부터 대한민국의 수도로, 현재 약 950만 명이 거주합니다." class="explanation-text"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="status-bar">
+                <ui:Label text="⏱ 18.2s" class="status-text"/>
+                <ui:Label text="★ 1 / 5" class="status-text"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="panel-result" class="panel-full hidden">
+            <ui:VisualElement class="result-center">
+                <ui:Label text="🎉" class="result-emoji"/>
+                <ui:Label text="클리어!" class="result-title"/>
+                <ui:Label text="4 / 5 정답" class="result-score"/>
+                <ui:Label text="훌륭합니다! 역사 지식이 상당하시네요.&#10;특히 수도 관련 문제를 완벽하게 맞히셨어요." class="result-comment"/>
+                <ui:Button text="↩ 다시 하기" class="restart-btn"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
