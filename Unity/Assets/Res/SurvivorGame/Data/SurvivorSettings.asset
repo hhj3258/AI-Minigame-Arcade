@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19161a3a89ea0ed48a9dc9ec80eac1e2, type: 3}
+  m_Name: SurvivorSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SurvivorSettings
+  Waves:
+  - Duration: 15
+    SlimeCount: 40
+    BatCount: 0
+    GolemCount: 0
+  - Duration: 15
+    SlimeCount: 15
+    BatCount: 0
+    GolemCount: 15
+  - Duration: 15
+    SlimeCount: 15
+    BatCount: 15
+    GolemCount: 15
+  - Duration: 15
+    SlimeCount: 20
+    BatCount: 20
+    GolemCount: 20
+  - Duration: 15
+    SlimeCount: 25
+    BatCount: 25
+    GolemCount: 25
+  - Duration: 15
+    SlimeCount: 30
+    BatCount: 30
+    GolemCount: 30
+  BossSpawnInterval: 10
+  ExpThresholds: 140000002800000050000000a0000000400100004001000040010000400100004001000040010000

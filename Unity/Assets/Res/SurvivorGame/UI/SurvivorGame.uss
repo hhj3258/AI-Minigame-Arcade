@@ -1,0 +1,349 @@
+/* ═══════════════════════════════════════════════
+   SurvivorGame.uss  —  뱀서라이크 HUD 스타일
+   기준 해상도: 1080 × 1920
+   ═══════════════════════════════════════════════ */
+
+/* ── 루트 ─────────────────────────────────────── */
+.survivor-root {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* ── HUD 패널 ─────────────────────────────────── */
+.hud-panel {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+}
+
+/* ── 상단 바 ─────────────────────────────────── */
+.top-bar {
+    position: absolute;
+    left: 0; top: 0; right: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 60px;
+    padding-bottom: 20px;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.top-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* HP 컨테이너 */
+.hp-container {
+    flex: 1;
+    flex-direction: column;
+    margin-right: 14px;
+}
+
+.hp-label {
+    font-size: 22px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-bottom: 5px;
+}
+
+.hp-bg {
+    width: 100%;
+    height: 14px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.hp-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 100%;
+    background-color: rgb(231, 76, 60);
+    border-radius: 7px;
+    transition-property: width;
+    transition-duration: 0.3s;
+}
+
+/* HP 위험 깜박임 */
+.hp-container.hp-danger .hp-fill {
+    opacity: 1;
+    transition-property: opacity;
+    transition-duration: 0.5s;
+}
+
+/* 타이머 */
+.timer-label {
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    min-width: 90px;
+    -unity-text-align: middle-center;
+    margin-right: 14px;
+}
+
+.timer-label.boss-incoming {
+    color: rgb(231, 76, 60);
+}
+
+/* 처치 수 */
+.kill-label {
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.8);
+    min-width: 100px;
+    -unity-text-align: middle-right;
+}
+
+/* EXP 행 */
+.exp-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.exp-bg {
+    flex: 1;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.exp-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 0%;
+    background-color: rgb(52, 152, 219);
+    border-radius: 4px;
+    transition-property: width;
+    transition-duration: 0.4s;
+}
+
+.level-label {
+    font-size: 22px;
+    -unity-font-style: bold;
+    color: rgb(160, 196, 255);
+    min-width: 60px;
+    -unity-text-align: middle-right;
+}
+
+/* ── 가상 조이스틱 ───────────────────────────── */
+.joystick-area {
+    position: absolute;
+    left: 32px;
+    bottom: 60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+    align-items: center;
+    justify-content: center;
+}
+
+.joystick-handle {
+    width: 84px;
+    height: 84px;
+    border-radius: 42px;
+    background-color: rgba(255, 255, 255, 0.35);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-color: rgba(255, 255, 255, 0.5);
+    translate: 0px 0px;
+    transition-property: translate;
+    transition-duration: 0.05s;
+}
+
+/* ── 업그레이드 패널 ────────────────────────── */
+.upgrade-panel {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.82);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-left: 32px;
+    padding-right: 32px;
+}
+
+.upgrade-title {
+    font-size: 40px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-bottom: 10px;
+}
+
+.upgrade-sub {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 26px;
+}
+
+.upgrade-cards {
+    flex-direction: column;
+    width: 100%;
+}
+
+/* 업그레이드 카드 아이템 */
+.upgrade-card {
+    width: 100%;
+    background-color: rgb(26, 26, 46);
+    border-radius: 20px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-color: rgba(255, 255, 255, 0.1);
+    padding-left: 22px;
+    padding-right: 22px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.upgrade-card.new {
+    border-color: rgb(255, 215, 0);
+}
+
+.upgrade-card.evolve {
+    border-color: rgb(91, 110, 245);
+}
+
+.weapon-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 20px;
+}
+
+.weapon-icon-shotgun { background-color: rgba(231, 76, 60, 0.2); }
+.weapon-icon-orb     { background-color: rgba(52, 152, 219, 0.2); }
+.weapon-icon-missile { background-color: rgba(255, 214, 0, 0.2); }
+
+.weapon-icon-label {
+    font-size: 44px;
+    -unity-text-align: middle-center;
+}
+
+.weapon-info {
+    flex: 1;
+    flex-direction: column;
+}
+
+.weapon-name {
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-bottom: 4px;
+}
+
+.weapon-level {
+    font-size: 22px;
+    -unity-font-style: bold;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.weapon-level.new    { color: rgb(255, 215, 0); }
+.weapon-level.evolve { color: rgb(91, 110, 245); }
+
+.weapon-desc {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: normal;
+}
+
+/* ── 결과 패널 ──────────────────────────────── */
+.result-panel {
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.87);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-left: 44px;
+    padding-right: 44px;
+}
+
+.result-title {
+    font-size: 72px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-bottom: 20px;
+}
+
+.result-divider {
+    width: 100px;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    margin-bottom: 36px;
+}
+
+.result-stats {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding-left: 36px;
+    padding-right: 36px;
+    padding-top: 28px;
+    padding-bottom: 8px;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.stat-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.stat-label {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.stat-value {
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.score-row .score-label { color: rgb(255, 215, 0); }
+.score-row .score-value {
+    font-size: 48px;
+    color: rgb(255, 215, 0);
+}
+
+.restart-button {
+    margin-top: 14px;
+    width: 360px;
+    height: 100px;
+    background-color: rgb(91, 110, 245);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-radius: 24px;
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+/* ── 공통 유틸리티 ──────────────────────────── */
+.hidden {
+    display: none;
+}

@@ -1,0 +1,66 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Res/SurvivorGame/UI/SurvivorGame.uss"/>
+    <ui:VisualElement name="survivor-root" class="survivor-root">
+
+        <!-- HUD 패널 (항상 표시) -->
+        <ui:VisualElement name="hud-panel" class="hud-panel">
+
+            <!-- 상단 바: HP / 타이머 / 처치수 + EXP 바 -->
+            <ui:VisualElement class="top-bar">
+                <ui:VisualElement class="top-row">
+                    <ui:VisualElement name="hp-container" class="hp-container">
+                        <ui:Label name="hp-label" text="HP 100 / 100" class="hp-label"/>
+                        <ui:VisualElement class="hp-bg">
+                            <ui:VisualElement name="hp-fill" class="hp-fill"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="timer-label" text="00:00" class="timer-label"/>
+                    <ui:Label name="kill-label" text="처치 0" class="kill-label"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="exp-row">
+                    <ui:VisualElement class="exp-bg">
+                        <ui:VisualElement name="exp-fill" class="exp-fill"/>
+                    </ui:VisualElement>
+                    <ui:Label name="level-label" text="Lv.1" class="level-label"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- 가상 조이스틱 -->
+            <ui:VisualElement name="joystick-area" class="joystick-area">
+                <ui:VisualElement name="joystick-handle" class="joystick-handle"/>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- 업그레이드 패널 (레벨업 시 표시) -->
+        <ui:VisualElement name="upgrade-panel" class="upgrade-panel hidden">
+            <ui:Label name="upgrade-title" text="무기를 선택하세요" class="upgrade-title"/>
+            <ui:Label name="upgrade-sub" text="" class="upgrade-sub"/>
+            <ui:VisualElement name="upgrade-cards" class="upgrade-cards">
+                <!-- C#에서 동적으로 카드 3장 생성 -->
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 결과 패널 (HP 0 시 표시) -->
+        <ui:VisualElement name="result-panel" class="result-panel hidden">
+            <ui:Label name="result-title" text="💀 게임 오버" class="result-title"/>
+            <ui:VisualElement class="result-divider"/>
+            <ui:VisualElement class="result-stats">
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="생존 시간" class="stat-label"/>
+                    <ui:Label name="survive-time-label" text="00:00" class="stat-value"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row">
+                    <ui:Label text="처치 수" class="stat-label"/>
+                    <ui:Label name="kill-count-label" text="0" class="stat-value"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-row score-row">
+                    <ui:Label text="점수" class="stat-label score-label"/>
+                    <ui:Label name="score-label" text="0" class="stat-value score-value"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button name="restart-button" text="다시 하기" class="restart-button"/>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
