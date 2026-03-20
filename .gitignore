@@ -84,3 +84,6 @@ Unity/.utmp/
 
 # JVM 크래시 로그
 Unity/hs_err_pid*.log
+
+# Unity Services 연동 설정 (로컬 전용)
+Unity/ProjectSettings/UnityConnectSettings.asset
