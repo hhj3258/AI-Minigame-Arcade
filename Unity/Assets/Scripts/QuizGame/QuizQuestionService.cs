@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -8,9 +6,6 @@ public class QuizQuestionService
 {
     private readonly SupabaseQuizClient _supabaseClient;
     private readonly QuizSettings _quizSettings;
-    // 세션 내 중복 호출 방지용 인메모리 캐시
-    private readonly Dictionary<string, List<QuizQuestion>> _memoryCache = new Dictionary<string, List<QuizQuestion>>();
-
     public QuizQuestionService(SupabaseQuizClient supabaseClient, QuizSettings quizSettings)
     {
         _supabaseClient = supabaseClient;
@@ -23,12 +18,6 @@ public class QuizQuestionService
         {
             Debug.LogError("토픽이 비어 있습니다.");
             return null;
-        }
-
-        // 인메모리 캐시 확인
-        if (_memoryCache.TryGetValue(topic, out List<QuizQuestion> cached) && cached.Count >= questionCount)
-        {
-            return cached.OrderBy(_ => Guid.NewGuid()).Take(questionCount).ToList();
         }
 
         if (_supabaseClient == null)
@@ -44,8 +33,7 @@ public class QuizQuestionService
             return null;
         }
 
-        _memoryCache[topic] = questions;
-        return questions.OrderBy(_ => Guid.NewGuid()).Take(questionCount).ToList();
+        return questions;
     }
 
     public async UniTask<string> GetCommentAsync(int correctCount, int totalCount, string topic)

@@ -278,7 +278,7 @@
 }
 
 .result-title {
-    font-size: 72px;
+    font-size: 48px;
     -unity-font-style: bold;
     color: rgb(255, 255, 255);
     margin-bottom: 20px;
@@ -324,13 +324,13 @@
 
 .score-row .score-label { color: rgb(255, 215, 0); }
 .score-row .score-value {
-    font-size: 48px;
+    font-size: 36px;
     color: rgb(255, 215, 0);
 }
 
 .restart-button {
     margin-top: 14px;
-    width: 360px;
+    width: 200px;
     height: 100px;
     background-color: rgb(91, 110, 245);
     border-left-width: 0;

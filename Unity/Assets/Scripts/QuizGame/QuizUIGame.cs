@@ -22,7 +22,7 @@ public class QuizUIGame : MonoBehaviour
     private VisualElement _panelGameplay;
     private VisualElement _panelResult;
 
-    private List<Button> _topicButtons = new List<Button>();
+    private List<VisualElement> _topicButtons = new List<VisualElement>();
 
     private Label _topicBadge;
     private Label _questionCounter;
@@ -33,15 +33,22 @@ public class QuizUIGame : MonoBehaviour
     private Label _timerLabel;
     private Label _scoreLabel;
 
+    private VisualElement _questionCard;
+    private VisualElement _resultBody;
+    private VisualElement _resultScoreCard;
+
     private Label _resultEmoji;
     private Label _resultTitle;
     private Label _resultScore;
     private Label _resultComment;
     private Button _restartButton;
 
+    private VisualElement _homeBtn;
+
     // --- 게임 상태 ---
     private GamePhase _phase;
     private string _selectedTopic;
+    private string _selectedTopicEmoji;
     private int _currentIndex;
     private int _correctCount;
     private float _remainingTime;
@@ -57,6 +64,7 @@ public class QuizUIGame : MonoBehaviour
 
     private static readonly string[] IndexLabels = { "①", "②", "③", "④" };
 
+
     private void OnEnable()
     {
         var doc = GetComponent<UIDocument>();
@@ -68,31 +76,32 @@ public class QuizUIGame : MonoBehaviour
 
         _root = doc.rootVisualElement;
 
-        // 탭 네비게이션 숨김 (게임 플로우로 대체)
-        var tabNav = _root.Q<VisualElement>(className: "tab-nav");
-        if (tabNav != null)
-            tabNav.style.display = DisplayStyle.None;
-
         // 패널 참조
-        _panelTopic    = _root.Q<VisualElement>("panel-topic");
-        _panelLoading  = _root.Q<VisualElement>("panel-loading");
-        _panelGameplay = _root.Q<VisualElement>("panel-gameplay");
-        _panelResult   = _root.Q<VisualElement>("panel-result");
+        _panelTopic    = _root.Q<VisualElement>("topic-select-panel");
+        _panelLoading  = _root.Q<VisualElement>("loading-panel");
+        _panelGameplay = _root.Q<VisualElement>("gameplay-panel");
+        _panelResult   = _root.Q<VisualElement>("result-panel");
 
         // 주제 버튼 등록
         var topicList = _root.Q<VisualElement>(className: "topic-list");
         if (topicList != null)
         {
-            var btns = topicList.Query<Button>().ToList();
+            var btns = topicList.Query<VisualElement>(className: "topic-btn").ToList();
             for (int i = 0; i < btns.Count; i++)
             {
                 int idx = i;
                 _topicButtons.Add(btns[i]);
-                btns[i].clicked += () => OnTopicSelected(idx);
+                btns[i].RegisterCallback<PointerEnterEvent>(_ => btns[idx].AddToClassList("hovered"));
+                btns[i].RegisterCallback<PointerLeaveEvent>(_ => btns[idx].RemoveFromClassList("hovered"));
+                RegisterPressAnim(btns[i], () => OnTopicSelected(idx));
 
-                // QuizSettings에 해당 인덱스 주제가 있으면 텍스트 덮어씀
+                // QuizSettings에서 이모지 + 이름 설정
                 if (_quizSettings != null && i < _quizSettings.Topics.Length)
-                    btns[i].text = _quizSettings.Topics[i];
+                {
+                    var entry = _quizSettings.Topics[i];
+                    var label = new Label($"{entry.Emoji} {entry.Name}");
+                    btns[i].Add(label);
+                }
             }
         }
 
@@ -123,9 +132,14 @@ public class QuizUIGame : MonoBehaviour
             {
                 int idx = i;
                 _choiceButtons[i] = btns[i];
-                btns[i].clicked += () => OnChoiceClicked(idx);
+                RegisterPressAnim(btns[i], () => OnChoiceClicked(idx));
             }
         }
+
+        // 애니메이션 대상 요소
+        _questionCard   = _root.Q<VisualElement>(className: "question-card");
+_resultBody     = _root.Q<VisualElement>(className: "result-body");
+        _resultScoreCard = _root.Q<VisualElement>(className: "result-score-card");
 
         // 결과 패널 요소
         _resultEmoji   = _root.Q<Label>(className: "result-emoji");
@@ -134,9 +148,19 @@ public class QuizUIGame : MonoBehaviour
         _resultComment = _root.Q<Label>(className: "result-comment");
         _restartButton = _root.Q<Button>(className: "restart-btn");
         if (_restartButton != null)
-            _restartButton.clicked += OnRestartClicked;
+        {
+            RegisterPressAnim(_restartButton, OnRestartClicked);
+        }
 
-        // SupabaseClient 자동 탐색
+        // 홈 버튼
+        _homeBtn = _root.Q<VisualElement>("home-btn");
+        if (_homeBtn != null)
+        {
+            _homeBtn.RegisterCallback<PointerEnterEvent>(_ => _homeBtn.AddToClassList("hovered"));
+            _homeBtn.RegisterCallback<PointerLeaveEvent>(_ => _homeBtn.RemoveFromClassList("hovered"));
+            RegisterPressAnim(_homeBtn, OnHomeClicked);
+        }
+
         // 로딩 도트 참조
         _dots = new VisualElement[]
         {
@@ -170,7 +194,8 @@ public class QuizUIGame : MonoBehaviour
     private void OnTopicSelected(int index)
     {
         if (_quizSettings == null || index < 0 || index >= _quizSettings.Topics.Length) return;
-        _selectedTopic = _quizSettings.Topics[index];
+        _selectedTopic = _quizSettings.Topics[index].Name;
+        _selectedTopicEmoji = _quizSettings.Topics[index].Emoji;
         LoadQuestionsAsync().Forget();
     }
 
@@ -211,7 +236,10 @@ public class QuizUIGame : MonoBehaviour
         QuizQuestion q = _questions[_currentIndex];
 
         if (_topicBadge != null)
-            _topicBadge.text = string.IsNullOrEmpty(q.Topic) ? _selectedTopic : q.Topic;
+        {
+            string emoji = string.IsNullOrEmpty(_selectedTopicEmoji) ? "" : _selectedTopicEmoji + " ";
+            _topicBadge.text = emoji + (string.IsNullOrEmpty(q.Topic) ? _selectedTopic : q.Topic);
+        }
 
         if (_questionCounter != null)
             _questionCounter.text = $"{_currentIndex + 1} / {_questions.Count}";
@@ -233,6 +261,9 @@ public class QuizUIGame : MonoBehaviour
                     _choiceButtons[i].SetEnabled(true);
                     _choiceButtons[i].RemoveFromClassList("correct");
                     _choiceButtons[i].RemoveFromClassList("wrong");
+                    // visibility:hidden은 transition 대상 아님 → 즉시 숨김 (역방향 fade-out 방지)
+                    _choiceButtons[i].style.visibility = Visibility.Hidden;
+                    _choiceButtons[i].RemoveFromClassList("anim-in");
                     _choiceButtons[i].style.display = DisplayStyle.Flex;
                 }
                 else
@@ -255,6 +286,8 @@ public class QuizUIGame : MonoBehaviour
             _scoreLabel.text = $"★ {_correctCount} / {_questions.Count}";
 
         _hasAnsweredCurrentQuestion = false;
+
+        AnimateQuestionEntrance();
     }
 
     private void OnChoiceClicked(int choiceIndex)
@@ -361,12 +394,13 @@ public class QuizUIGame : MonoBehaviour
             _resultTitle.text = cleared ? "클리어!" : "실패";
 
         if (_resultScore != null)
-            _resultScore.text = $"{_correctCount} / {total} 정답";
+            _resultScore.text = $"{_correctCount} / {total}";
 
         if (_resultComment != null)
             _resultComment.text = "총평을 불러오는 중...";
 
         ShowPhase(GamePhase.Result);
+        AnimateResultEntrance();
         FetchAndShowCommentAsync().Forget();
     }
 
@@ -384,6 +418,16 @@ public class QuizUIGame : MonoBehaviour
     }
 
     private void OnRestartClicked()
+    {
+        ResetToTopicSelect();
+    }
+
+    private void OnHomeClicked()
+    {
+        ResetToTopicSelect();
+    }
+
+    private void ResetToTopicSelect()
     {
         _questions.Clear();
         _currentIndex = 0;
@@ -405,14 +449,17 @@ public class QuizUIGame : MonoBehaviour
             StartDotAnimation();
         else
             StopDotAnimation();
+
+        if (phase == GamePhase.TopicSelect)
+            AnimateTopicButtons();
     }
 
     private void StartDotAnimation()
     {
         StopDotAnimation();
         _dotCts = new CancellationTokenSource();
-        // 각 도트를 독립 루프로 실행 (오프셋: 0ms / 133ms / 267ms)
-        int[] offsets = { 0, 133, 267 };
+        // 각 도트를 독립 루프로 실행 (오프셋: 0ms / 250ms / 500ms)
+        int[] offsets = { 0, 250, 500 };
         for (int i = 0; i < _dots.Length; i++)
         {
             if (_dots[i] != null)
@@ -430,9 +477,9 @@ public class QuizUIGame : MonoBehaviour
             while (!ct.IsCancellationRequested)
             {
                 dot.AddToClassList("active");
-                await UniTask.Delay(200, cancellationToken: ct);
+                await UniTask.Delay(400, cancellationToken: ct);
                 dot.RemoveFromClassList("active");
-                await UniTask.Delay(200, cancellationToken: ct);
+                await UniTask.Delay(350, cancellationToken: ct);
             }
         }
         catch (OperationCanceledException) { }
@@ -446,6 +493,154 @@ public class QuizUIGame : MonoBehaviour
         if (_dots == null) return;
         foreach (var dot in _dots)
             dot?.RemoveFromClassList("active");
+    }
+
+    // ── 유틸 ────────────────────────────────────────────
+
+    // 버튼 프레스 애니메이션
+    // PointerDown : 즉시 0.93 축소
+    // PointerUp   : 즉시 1.12 오버슈트 → 1프레임 후 CSS ease-out으로 1.0 복귀 (스프링 효과)
+    // PointerLeave: 눌린 상태일 때만 동일 처리 (액션 미실행)
+    private static readonly StyleScale PressedScale =
+        new(new Scale(new Vector3(0.93f, 0.93f, 1f)));
+    private static readonly StyleScale OvershootScale =
+        new(new Scale(new Vector3(1.12f, 1.12f, 1f)));
+    private static readonly StyleList<TimeValue> ZeroTransition =
+        new(new List<TimeValue> { new(0) });
+
+    private void RegisterPressAnim(VisualElement el, Action onReleaseDone = null)
+    {
+        bool fireOnEnd = false;
+        bool isPressed = false;
+
+        el.RegisterCallback<PointerDownEvent>(_ =>
+        {
+            isPressed = true;
+            fireOnEnd = false;
+            // transitionDuration은 건드리지 않음 → CSS 0.2s ease-out으로 부드럽게 축소
+            el.style.scale = PressedScale;
+        }, TrickleDown.TrickleDown);
+
+        el.RegisterCallback<PointerUpEvent>(_ =>
+        {
+            if (!isPressed) return;
+            isPressed = false;
+            fireOnEnd = onReleaseDone != null;
+            // 즉시 오버슈트(1.12) 후 1프레임 뒤 CSS transition으로 1.0 복귀
+            el.style.transitionDuration = ZeroTransition;
+            el.style.scale = OvershootScale;
+            el.schedule.Execute(() =>
+            {
+                el.style.transitionDuration = StyleKeyword.Null;
+                el.style.scale = new StyleScale(StyleKeyword.Null);
+            }).StartingIn(1);
+        });
+
+        el.RegisterCallback<PointerLeaveEvent>(_ =>
+        {
+            if (!isPressed) return;
+            isPressed = false;
+            fireOnEnd = false;
+            el.style.transitionDuration = ZeroTransition;
+            el.style.scale = OvershootScale;
+            el.schedule.Execute(() =>
+            {
+                el.style.transitionDuration = StyleKeyword.Null;
+                el.style.scale = new StyleScale(StyleKeyword.Null);
+            }).StartingIn(1);
+        });
+
+        if (onReleaseDone != null)
+        {
+            el.RegisterCallback<TransitionEndEvent>(evt =>
+            {
+                if (!fireOnEnd) return;
+                foreach (var p in evt.stylePropertyNames)
+                {
+                    if (p.ToString() != "scale") continue;
+                    fireOnEnd = false;
+                    onReleaseDone();
+                    break;
+                }
+            });
+        }
+    }
+
+    // ── 애니메이션 ──────────────────────────────────────
+
+    private void AnimateTopicButtons()
+    {
+        // 버튼 1개당 애니메이션 duration 350ms + 여유 20ms = 250ms 간격으로 순차 재생 (살짝 겹침)
+        const int AnimDuration = 350;
+        const int StepMs = 250;
+
+        for (int i = 0; i < _topicButtons.Count; i++)
+        {
+            var btn = _topicButtons[i];
+            // visibility:hidden으로 즉시 숨김 → 역방향 fade-out 방지
+            btn.style.visibility = Visibility.Hidden;
+            btn.RemoveFromClassList("anim-in");
+            btn.RemoveFromClassList("anim-done");
+            int delayMs = 60 + i * StepMs;
+            btn.schedule.Execute(() =>
+            {
+                btn.style.visibility = StyleKeyword.Null;
+                btn.AddToClassList("anim-in");
+            }).StartingIn(delayMs);
+            // 진입 애니메이션 완료 후 opacity/translate transition 제거 → hover 역행 방지
+            btn.schedule.Execute(() => btn.AddToClassList("anim-done")).StartingIn(delayMs + AnimDuration + 70);
+        }
+    }
+
+    private void AnimateQuestionEntrance()
+    {
+        // 질문 카드: visibility:hidden으로 즉시 숨긴 뒤 fade-in
+        if (_questionCard != null)
+        {
+            _questionCard.style.visibility = Visibility.Hidden;
+            _questionCard.RemoveFromClassList("anim-in");
+            _questionCard.schedule.Execute(() =>
+            {
+                _questionCard.style.visibility = StyleKeyword.Null;
+                _questionCard.AddToClassList("anim-in");
+            }).StartingIn(40);
+        }
+
+        // 선택지 버튼 위→아래 순차 등장 (visibility 해제 후 CSS transition 발동)
+        const int StepMs = 220;
+        if (_choiceButtons != null)
+        {
+            for (int i = 0; i < _choiceButtons.Length; i++)
+            {
+                if (_choiceButtons[i] == null) continue;
+                var btn = _choiceButtons[i];
+                int delayMs = 200 + i * StepMs;
+                btn.schedule.Execute(() =>
+                {
+                    btn.style.visibility = StyleKeyword.Null;
+                    btn.AddToClassList("anim-in");
+                }).StartingIn(delayMs);
+            }
+        }
+    }
+
+    private void AnimateResultEntrance()
+    {
+        if (_resultBody != null)
+        {
+            _resultBody.RemoveFromClassList("anim-in");
+            _resultBody.schedule.Execute(() => _resultBody.AddToClassList("anim-in")).StartingIn(80);
+        }
+        if (_resultScoreCard != null)
+        {
+            _resultScoreCard.RemoveFromClassList("anim-pop-in");
+            _resultScoreCard.AddToClassList("anim-pop-hidden");
+            _resultScoreCard.schedule.Execute(() =>
+            {
+                _resultScoreCard.RemoveFromClassList("anim-pop-hidden");
+                _resultScoreCard.AddToClassList("anim-pop-in");
+            }).StartingIn(220);
+        }
     }
 
     private static void SetPanel(VisualElement panel, bool visible)

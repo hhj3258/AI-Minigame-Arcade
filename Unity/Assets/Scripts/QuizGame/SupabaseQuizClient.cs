@@ -110,6 +110,9 @@ public class SupabaseQuizClient : MonoBehaviour
                 return null;
             }
 
+            if (request.GetResponseHeader("X-Gemini-Fallback") == "true")
+                Debug.LogWarning("[Supabase] Gemini API 한도 초과 — DB 저장 데이터로 대체 응답합니다.", this);
+
             return request.downloadHandler.text;
         }
     }

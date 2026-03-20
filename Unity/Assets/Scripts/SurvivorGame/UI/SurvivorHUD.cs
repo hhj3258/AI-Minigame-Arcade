@@ -18,10 +18,10 @@ public class SurvivorHUD
 
     public SurvivorHUD(VisualElement root)
     {
-        _hpFill      = root.Q("hp-fill");
-        _hpContainer = root.Q("hp-container");
+        _hpFill      = root.Q("hp-bar-fill");
+        _hpContainer = root.Q("hp-bar-container");
         _hpLabel     = root.Q<Label>("hp-label");
-        _expFill     = root.Q("exp-fill");
+        _expFill     = root.Q("exp-bar-fill");
         _levelLabel  = root.Q<Label>("level-label");
         _timerLabel  = root.Q<Label>("timer-label");
         _killLabel   = root.Q<Label>("kill-label");

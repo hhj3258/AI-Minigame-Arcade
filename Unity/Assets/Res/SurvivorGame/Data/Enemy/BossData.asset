@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658a62c812ab5e542a171966d69ea2db, type: 3}
   m_Name: BossData
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  MaxHP: 100
+  MaxHP: 200
   MoveSpeed: 2
   ExpValue: 10
   PoolSize: 5

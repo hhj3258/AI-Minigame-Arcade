@@ -15,8 +15,13 @@ MonoBehaviour:
   QuestionCount: 5
   TimeLimitSeconds: 20
   Topics:
-  - "\uC5ED\uC0AC"
-  - "\uACFC\uD559"
-  - "\uC0C1\uC2DD"
-  - "\uBB38\uD654"
-  - "\uC2A4\uD3EC\uCE20"
+  - Emoji: "\U0001F30D"
+    Name: "\uC138\uACC4 \uC5ED\uC0AC"
+  - Emoji: "\U0001F52C"
+    Name: "\uACFC\uD559 \uC0C1\uC2DD"
+  - Emoji: "\U0001F3AC"
+    Name: "\uC601\uD654 / \uB4DC\uB77C\uB9C8"
+  - Emoji: "\u26BD"
+    Name: "\uC2A4\uD3EC\uCE20"
+  - Emoji: "\U0001F3B5"
+    Name: K-POP

@@ -8,10 +8,10 @@
             <!-- 상단 바: HP / 타이머 / 처치수 + EXP 바 -->
             <ui:VisualElement class="top-bar">
                 <ui:VisualElement class="top-row">
-                    <ui:VisualElement name="hp-container" class="hp-container">
+                    <ui:VisualElement name="hp-bar-container" class="hp-container">
                         <ui:Label name="hp-label" text="HP 100 / 100" class="hp-label"/>
                         <ui:VisualElement class="hp-bg">
-                            <ui:VisualElement name="hp-fill" class="hp-fill"/>
+                            <ui:VisualElement name="hp-bar-fill" class="hp-fill"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:Label name="timer-label" text="00:00" class="timer-label"/>
@@ -19,7 +19,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement class="exp-row">
                     <ui:VisualElement class="exp-bg">
-                        <ui:VisualElement name="exp-fill" class="exp-fill"/>
+                        <ui:VisualElement name="exp-bar-fill" class="exp-fill"/>
                     </ui:VisualElement>
                     <ui:Label name="level-label" text="Lv.1" class="level-label"/>
                 </ui:VisualElement>
