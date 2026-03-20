@@ -82,9 +82,13 @@ public class SupabaseQuizClient : MonoBehaviour
         using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
         {
             byte[] bodyRaw = Encoding.UTF8.GetBytes(body);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.uploadHandler   = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
-            request.timeout = _settings.TimeoutSeconds;
+            request.timeout         = _settings.TimeoutSeconds;
+#if DEVELOPMENT_BUILD
+            // Development Build에서만 SSL CA 인증서 검증 우회
+            request.certificateHandler = new BypassCertificateHandler();
+#endif
             request.SetRequestHeader("Content-Type", "application/json");
             request.SetRequestHeader("Authorization", $"Bearer {_settings.AnonKey}");
 
@@ -122,5 +126,11 @@ public class SupabaseQuizClient : MonoBehaviour
     {
         [JsonProperty("comment")]
         public string Comment;
+    }
+
+    // Android SSL CA 인증서 검증 우회 (데모용)
+    private class BypassCertificateHandler : CertificateHandler
+    {
+        protected override bool ValidateCertificate(byte[] certificateData) => true;
     }
 }
