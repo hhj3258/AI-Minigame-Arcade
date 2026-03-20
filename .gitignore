@@ -62,6 +62,12 @@ crashlytics-build.properties
 # Packed Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
+# Addressables 빌드 출력물 (플랫폼별 생성 파일)
+Unity/Assets/AddressableAssetsData/Android/
+Unity/Assets/AddressableAssetsData/Android.meta
+Unity/Assets/AddressableAssetsData/link.xml
+Unity/Assets/AddressableAssetsData/link.xml.meta
+
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/
@@ -72,3 +78,9 @@ Unity/Assets/StreamingAssets/claude_config.json.meta
 
 # Screenshots
 Unity/Assets/Screenshots/
+
+# Unity temp
+Unity/.utmp/
+
+# JVM 크래시 로그
+Unity/hs_err_pid*.log
