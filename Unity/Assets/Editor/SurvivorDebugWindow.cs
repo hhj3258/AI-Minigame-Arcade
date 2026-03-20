@@ -11,7 +11,7 @@ using UObject = UnityEngine.Object;
 /// </summary>
 public class SurvivorDebugWindow : EditorWindow
 {
-    [MenuItem("Tools/Survivor Debug Window")]
+    [MenuItem("Tools/서바이버 디버그 창")]
     public static void OpenWindow()
     {
         var wnd = GetWindow<SurvivorDebugWindow>("Survivor Debug");

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class WireWeaponRefs
 {
-    [MenuItem("Tools/Wire Weapon & Spawner Refs")]
+    [MenuItem("Tools/무기·스포너 레퍼런스 연결")]
     public static void Wire()
     {
         // ── 에셋 로드 ─────────────────────────────────────

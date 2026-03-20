@@ -8,7 +8,7 @@ using TMPro;
 /// </summary>
 public static class PreviewGameplayPanel
 {
-    [MenuItem("Tools/Preview Gameplay Panel")]
+    [MenuItem("Tools/패널 미리보기/게임플레이")]
     public static void ShowGameplay()
     {
         SetPanel("QuizTopicSelect", false);
@@ -48,7 +48,7 @@ public static class PreviewGameplayPanel
         Debug.Log("게임플레이 패널 미리보기 활성화 완료.");
     }
 
-    [MenuItem("Tools/Preview TopicSelect Panel")]
+    [MenuItem("Tools/패널 미리보기/주제 선택")]
     public static void ShowTopicSelect()
     {
         SetPanel("QuizTopicSelect", true);

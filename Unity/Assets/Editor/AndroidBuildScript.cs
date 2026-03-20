@@ -15,7 +15,7 @@ public static class AndroidBuildScript
     private const string OutputDir        = "Builds";
     private const string ApkName          = "AIMiniArcade.apk";
 
-    [MenuItem("Tools/Build Android APK")]
+    [MenuItem("Tools/Android APK 빌드")]
     public static void BuildAndroid()
     {
         // Build Profile 활성화

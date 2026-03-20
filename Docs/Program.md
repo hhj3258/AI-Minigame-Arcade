@@ -74,7 +74,10 @@ Scripts/
 ├── Editor/                         ← Unity Editor 전용 (빌드에 미포함)
 │   ├── AndroidBuildScript.cs       Tools > Build Android APK 자동 빌드
 │   ├── CaptureGameView.cs          Tools > Capture Game View 스크린샷 캡처
-│   └── SurvivorDebugWindow.cs      SurvivorGame 디버그 윈도우
+│   ├── PreviewGameplayPanel.cs     Tools > Preview * Panel — 퀴즈 패널 레이아웃 에디터 확인
+│   ├── WireWeaponRefs.cs           Tools > Wire Weapon & Spawner Refs — 레퍼런스 일괄 연결
+│   ├── QuickSwipe.cs               Tools > Quick Swipe Survivor — Survivor 카드로 즉시 이동
+│   └── SurvivorDebugWindow.cs      Tools > Survivor Debug Window — 런타임 상태 모니터링
 │
 └── SurvivorGame/
     ├── SurvivorGame.cs           게임 루프 총괄 (IMinigame 구현)
