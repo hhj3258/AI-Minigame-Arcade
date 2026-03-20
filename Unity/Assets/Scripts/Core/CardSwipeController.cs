@@ -35,14 +35,12 @@ public class CardSwipeController : MonoBehaviour
     private float   _touchStartTime;
     private bool    _tracking;
 
-    private void Start()
+    // Start()는 GameManager.Start()에서 InitializeAsync()를 명시적으로 호출하므로 제거.
+
+    public async UniTask InitializeAsync()
     {
         if (_cards == null || _cards.Count == 0) return;
-        InitializeAsync().Forget();
-    }
 
-    private async UniTaskVoid InitializeAsync()
-    {
         // 카드 초기 배치: 0번 ON, 나머지 아래(100%)
         for (int i = 0; i < _cards.Count; i++)
         {

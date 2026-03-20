@@ -74,9 +74,6 @@ public class SurvivorGame : MonoBehaviour, IMinigame
     // ── 라이프사이클 ────────────────────────────────────────
     private void Awake()
     {
-        // 기기 주사율에 맞게 목표 프레임 설정 (60hz → 60, 120hz → 120 등)
-        Application.targetFrameRate = (int)Screen.currentResolution.refreshRateRatio.value;
-
         var doc  = GetComponent<UIDocument>();
         var root = doc != null ? doc.rootVisualElement : null;
 

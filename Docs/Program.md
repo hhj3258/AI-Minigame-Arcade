@@ -12,8 +12,9 @@
 ```
 MainCamera              [Camera, AudioListener]
 EventSystem             [EventSystem, InputSystemUIInputModule]
+GameManager             [GameManager]  ← 프리팹. 앱 초기화 및 CardSwipeController 생명주기 제어
 CardSwipeController     [CardSwipeController]
-├── GameCard_0          [UIDocument, QuizUIGame, SupabaseQuizClient, SafeAreaApplier]
+├── GameCard_0          [UIDocument, QuizGame, SupabaseQuizClient, SafeAreaApplier]
 └── GameCard_1          [UIDocument, SurvivorGame, SafeAreaApplier]
     ├── SurvivorCamera  [Camera, CameraFollow, UniversalAdditionalCameraData]
     ├── GameWorld       [Transform]
@@ -58,26 +59,38 @@ USS 애니메이션 유틸 클래스:
 Scripts/
 ├── Core/
 │   ├── IMinigame.cs              미니게임 공통 인터페이스
-│   ├── CardSwipeController.cs    카드 스와이프 전환 컨트롤러
-│   └── SafeAreaApplier.cs        노치/펀치홀 Safe Area 자동 적용 (GameCard_0·1에 부착)
+│   ├── CardSwipeController.cs    카드 스와이프 전환 컨트롤러 (InitializeAsync는 GameManager가 호출)
+│   ├── SafeAreaApplier.cs        노치/펀치홀 Safe Area 자동 적용 (GameCard_0·1에 부착)
+│   ├── GameManager.cs            앱 전역 초기화·생명주기 제어 (GameState enum 포함, 프리팹)
+│   ├── AppSettings.cs            ScriptableObject — 기기별·그래픽 설정 (fps, 수면방지, 멀티터치)
+│   └── DevToolsLoader.cs         #if DEVELOPMENT_BUILD — Addressables로 IngameDebugConsole 동적 로드
 │
 ├── Settings/
 │   └── SupabaseSettings.cs       ScriptableObject — Supabase URL·Key·Timeout
 │
+├── UI/
+│   └── UIAnim.cs                 UIToolkit 공통 애니메이션 유틸 (RegisterPressAnim)
+│
 ├── QuizGame/
-│   ├── QuizUIGame.cs             퀴즈 게임 컨트롤러 (홈버튼·주제이모지·버튼 애니메이션)
+│   ├── QuizGame.cs               퀴즈 게임 컨트롤러 (페이즈·흐름 관리, 패널 4종 조율)
 │   ├── QuizQuestionService.cs    Supabase 호출 래퍼 (캐시 없음, 매 도전마다 새로 요청)
 │   ├── SupabaseQuizClient.cs     Supabase HTTP 클라이언트 (UnityWebRequest)
 │   ├── QuizSettings.cs           ScriptableObject — TopicEntry[] 포함
-│   └── QuizQuestion.cs           퀴즈 문제 데이터 모델
+│   ├── QuizQuestion.cs           퀴즈 문제 데이터 모델
+│   └── UI/
+│       ├── QuizTopicPanel.cs     주제 선택 패널 + 버튼 진입 애니메이션
+│       ├── QuizLoadingPanel.cs   로딩 패널 + 도트 애니메이션 (내부 관리)
+│       ├── QuizGameplayPanel.cs  문제·선택지·타이머·해설 표시
+│       └── QuizResultPanel.cs    결과 패널 (점수, AI 총평, 재시작/홈 버튼)
 │
 ├── Editor/                         ← Unity Editor 전용 (빌드에 미포함)
-│   ├── AndroidBuildScript.cs       Tools > Build Android APK 자동 빌드
-│   ├── CaptureGameView.cs          Tools > Capture Game View 스크린샷 캡처
-│   ├── PreviewGameplayPanel.cs     Tools > Preview * Panel — 퀴즈 패널 레이아웃 에디터 확인
-│   ├── WireWeaponRefs.cs           Tools > Wire Weapon & Spawner Refs — 레퍼런스 일괄 연결
-│   ├── QuickSwipe.cs               Tools > Quick Swipe Survivor — Survivor 카드로 즉시 이동
-│   └── SurvivorDebugWindow.cs      Tools > Survivor Debug Window — 런타임 상태 모니터링
+│   ├── AndroidBuildScript.cs       Tools > Android APK 빌드
+│   ├── CaptureGameView.cs          Tools > Game View 캡처
+│   ├── PreviewGameplayPanel.cs     Tools > 패널 미리보기
+│   ├── WireWeaponRefs.cs           Tools > 무기·스포너 레퍼런스 연결
+│   ├── QuickSwipe.cs               Tools > 빠른 이동
+│   ├── SurvivorDebugWindow.cs      Tools > 서바이버 디버그 창
+│   └── WindowShortcuts.cs          Tools > 창 바로가기 (어드레서블/MCP/디바이스 시뮬레이터)
 │
 └── SurvivorGame/
     ├── SurvivorGame.cs           게임 루프 총괄 (IMinigame 구현)
@@ -148,7 +161,8 @@ Scripts/
 - 지정 딜레이 후 `visibility = StyleKeyword.Null` 해제 + `.anim-in` 추가 → CSS transition 발동
 - 구현 메서드: `AnimateTopicButtons()`, `AnimateQuestionEntrance()`
 
-**프레스 애니메이션 (RegisterPressAnim)**
+**프레스 애니메이션 (`UIAnim.RegisterPressAnim`)**
+- 공통 유틸 `Scripts/UI/UIAnim.cs`에서 제공. 여러 게임에서 재사용 가능.
 - CSS 클래스 추가/제거는 같은 프레임 내 배치(batch)되어 transition이 무시됨 → 인라인 `style.scale` 직접 제어
 - PointerDown: CSS transition 유지 + `style.scale = PressedScale(0.93)` → 0.2s ease-out 축소
 - PointerUp: `ZeroTransition + OvershootScale(1.12)` 즉시 → 1프레임 schedule 후 인라인 해제 → CSS ease-out으로 1.0 복귀
