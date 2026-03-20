@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.PanelSettings
   themeUss: {fileID: -4733365628477956816, guid: 5ac81e2985426a24382521bbeaca95b0, type: 3}
   m_DisableNoThemeWarning: 0
-  m_TargetTexture: {fileID: 8400000, guid: 0721437b28343bd4aaddc12b2ef06a0d, type: 2}
+  m_TargetTexture: {fileID: 0}
   m_RenderMode: 0
   m_ColliderUpdateMode: 0
   m_ColliderIsTrigger: 1
@@ -29,7 +29,7 @@ MonoBehaviour:
   m_Match: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
-  m_BindingLogLevel: 0
+  m_BindingLogLevel: 2
   m_ClearDepthStencil: 1
   m_ClearColor: 0
   m_ColorClearValue: {r: 0, g: 0, b: 0, a: 0}
