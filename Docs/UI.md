@@ -42,6 +42,31 @@ YouTube Shorts / Instagram Reels 방식의 **스와이프 카드 UI**.
 - 기준 해상도: **1080 × 1920 (9:16)**
 - 안전 영역(Safe Area) 반영 필수
 
+### Safe Area 적용 방식
+
+**구현 스크립트**: `Assets/Scripts/Core/SafeAreaApplier.cs`
+
+- UIDocument가 붙은 GameObject에 컴포넌트로 추가하면 자동 적용
+- `rootVisualElement[0]` (첫 번째 자식 컨테이너)에 직접 스타일 적용
+- `Update()`에서 `Screen.safeArea` 변경 시에만 재적용 (화면 회전 대응)
+
+**핵심 규칙 — UIToolkit Safe Area 4가지 함정**
+
+| # | 함정 | 원인 | 해결 |
+|---|------|------|------|
+| 1 | `rootVisualElement`에 padding 적용 무효 | `position:absolute` 자식은 부모 padding 무시 | `root[0]`에 직접 적용 |
+| 2 | 첫 프레임 실패 후 재시도 안 됨 | `_lastSafeArea` 를 성공 전에 업데이트 | `ApplySafeArea()`가 `true` 반환 시에만 갱신 |
+| 3 | `top` 적용 시 하단 overflow | USS `height:100%` 명시 시 `bottom` 무시됨 | `width/height = StyleKeyword.Auto` 재정의 |
+| 4 | `position:relative`에서 `top`과 `bottom` 충돌 | relative에서 bottom은 오프셋, top 우선 | `position = Position.Absolute` 강제 전환 |
+
+**좌표 계산 (Screen.safeArea Y축 = 아래→위)**:
+```csharp
+float leftPct   = safeArea.xMin / sw * 100f;
+float rightPct  = (sw - safeArea.xMax) / sw * 100f;
+float topPct    = (sh - safeArea.yMax) / sh * 100f;  // 화면 상단 ~ safe area 상단 거리
+float bottomPct = safeArea.yMin / sh * 100f;           // 화면 하단 ~ safe area 하단 거리
+```
+
 ### 카드 컨테이너 구조
 
 ```
@@ -75,25 +100,7 @@ card-container
 
 ---
 
-## 5. UI Toolkit 구현 기준
-
-Unity의 UXML/USS 구조는 **웹 프로토타입 파일을 기준**으로 구현한다.
-
-| 프로토타입 파일 | 대응 UXML |
-|----------------|-----------|
-| `Prototype/index.html` | 스와이프 카드 컨테이너 (`CardSwipeController.cs`) |
-| `Prototype/QuizGame.html` | `Assets/UI/UXML/QuizGame.uxml` |
-| `Prototype/SurvivorGame.html` | `Assets/UI/UXML/SurvivorGame.uxml` |
-
-- HTML 클래스명(`.quiz-root`, `.hud-panel`, `.upgrade-card` 등)을 UXML의 `name` 또는 `class` 속성으로 1:1 매핑한다.
-- CSS 속성은 USS로 동일하게 옮긴다.
-- 패널 표시/숨김은 HTML의 `display:none ↔ flex` 전환과 동일하게 USS 클래스 토글로 구현한다.
-
-> 프로토타입 미리보기: `http://localhost:3333` (Python HTTP 서버, `Prototype/` 디렉토리 서빙)
-
----
-
-## 6. 파일 경로
+## 5. 파일 경로
 
 ```
 Assets/Res/QuizGame/UI/
@@ -106,7 +113,7 @@ Assets/Res/SurvivorGame/UI/
 
 ---
 
-## 6. 퀴즈 게임 UXML 패널 구조
+## 6. 퀴즈 게임 패널 구조
 
 파일: `Assets/Res/QuizGame/UI/QuizPanels.uxml`
 
@@ -133,9 +140,9 @@ root
 │   ├── loading-icon                   # "🧠"
 │   ├── loading-text                   # "문제를 생성하고 있습니다"
 │   └── dots-row
-│       ├── dot-0                      # delay offset: 0.0s
-│       ├── dot-1                      # delay offset: 0.13s
-│       └── dot-2                      # delay offset: 0.27s
+│       ├── dot-0                      # delay offset: 0ms
+│       ├── dot-1                      # delay offset: 250ms
+│       └── dot-2                      # delay offset: 500ms
 ├── gameplay-panel
 │   ├── gameplay-header
 │   │   ├── home-btn                   # 홈 버튼 (VisualElement + 🏠 Label), 누르면 topic-select로 복귀
@@ -233,7 +240,7 @@ root
 
 ## 10. 디자인 토큰
 
-USS 변수(`--color-*`) 또는 `ColorPalette` ScriptableObject로 관리한다.
+USS에 하드코딩으로 관리한다.
 
 ### 컬러 팔레트 (캐주얼 밝은 테마)
 
@@ -274,7 +281,7 @@ USS 변수(`--color-*`) 또는 `ColorPalette` ScriptableObject로 관리한다.
 
 ### 11-2. UXML 패널 구조
 
-파일: `Assets/UI/UXML/SurvivorGame.uxml`
+파일: `Assets/Res/SurvivorGame/UI/SurvivorGame.uxml`
 
 ```
 survivor-root
@@ -382,7 +389,7 @@ upgrade-card (버튼)
 
 ### 11-8. USS 스타일 가이드
 
-파일: `Assets/UI/USS/SurvivorGame.uss`
+파일: `Assets/Res/SurvivorGame/UI/SurvivorGame.uss`
 
 | 클래스 | 주요 스타일 |
 |--------|------------|
