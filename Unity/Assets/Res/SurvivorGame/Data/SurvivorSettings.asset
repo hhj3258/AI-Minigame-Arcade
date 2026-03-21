@@ -37,5 +37,17 @@ MonoBehaviour:
     SlimeCount: 30
     BatCount: 30
     GolemCount: 30
+  - Duration: 15
+    SlimeCount: 30
+    BatCount: 50
+    GolemCount: 30
+  - Duration: 15
+    SlimeCount: 50
+    BatCount: 50
+    GolemCount: 30
+  - Duration: 15
+    SlimeCount: 50
+    BatCount: 50
+    GolemCount: 50
   BossSpawnInterval: 10
   ExpThresholds: 140000002800000050000000a0000000400100004001000040010000400100004001000040010000
