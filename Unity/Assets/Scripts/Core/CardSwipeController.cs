@@ -86,7 +86,10 @@ public class CardSwipeController : MonoBehaviour
                 _tracking = false;
                 HandleSwipeDelta(touch.position.ReadValue().y - _touchStart.y);
             }
-            return;
+
+            // 터치가 활성 중이면 마우스 블록 진입 차단
+            if (touch.press.isPressed || touch.press.wasReleasedThisFrame)
+                return;
         }
 
         if (Mouse.current != null)
