@@ -1,6 +1,6 @@
 # AI MiniGame Arcade
 
-> AI가 매 판마다 새로운 콘텐츠를 생성하는 세로형 모바일 미니게임 모음
+> Claude와 바이브코딩으로 만든 모바일 미니게임 모음 | Unity 6
 
 [![Unity](https://img.shields.io/badge/Unity-6000.3.10f1-black?logo=unity)](https://unity.com/)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-brightgreen)]()
