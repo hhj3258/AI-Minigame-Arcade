@@ -90,3 +90,8 @@ Unity/ProjectSettings/UnityConnectSettings.asset
 
 # Playwright MCP 로그
 Unity/.playwright-mcp/
+
+# NuGet 패키지 (packages.config로 자동 restore)
+Unity/Assets/Packages/
+Unity/Assets/Packages.meta
+Unity/Packages/Microsoft.CodeAnalysis.Analyzers.*/
