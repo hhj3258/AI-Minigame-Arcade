@@ -244,6 +244,18 @@ public class QuizGame : MonoBehaviour
         else                           _resultPanel?.Hide();
     }
 
+    // ── 에디터 디버그 ─────────────────────────────────────
+#if UNITY_EDITOR
+    public void DebugJumpToResult(int correctCount = 3)
+    {
+        _isRunning = false;
+        if (string.IsNullOrEmpty(_selectedTopic)) _selectedTopic = "상식";
+        _correctCount = correctCount;
+        if (_questions.Count == 0) CreateDummyQuestions();
+        ShowResult();
+    }
+#endif
+
     // ── 더미 데이터 ───────────────────────────────────────
     private void CreateDummyQuestions()
     {

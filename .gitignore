@@ -87,3 +87,6 @@ Unity/hs_err_pid*.log
 
 # Unity Services 연동 설정 (로컬 전용)
 Unity/ProjectSettings/UnityConnectSettings.asset
+
+# Playwright MCP 로그
+Unity/.playwright-mcp/
